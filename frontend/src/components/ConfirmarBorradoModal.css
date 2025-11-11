@@ -1,0 +1,158 @@
+/* ---- frontend/src/components/ConfirmarBorradoModal.css ---- */
+
+.modal-backdrop-danger {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000; 
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.modal-content-danger {
+  background-color: var(--surface-color);
+  
+  /* --- CORRECCIÓN AQUÍ --- 
+     Quitamos el borde rojo y la sombra roja 
+  */
+  border: 1px solid var(--input-border-color); /* Borde normal */
+  border-radius: 12px;
+  width: 90%;
+  max-width: 500px;
+  box-shadow: var(--box-shadow); /* Sombra normal */
+  display: flex;
+  flex-direction: column;
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from { transform: translateY(-30px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.modal-header-danger {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  /* --- CORRECCIÓN AQUÍ --- 
+     Usamos el borde normal
+  */
+  border-bottom: 1px solid var(--input-border-color);
+}
+
+.modal-header-danger h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  /* --- CORRECCIÓN AQUÍ --- 
+     El título ya no es rojo, solo el botón de confirmar
+  */
+  color: var(--text-color); 
+}
+
+.modal-close-btn-danger {
+  background: none;
+  border: none;
+  font-size: 2rem;
+  color: var(--text-secondary-color);
+  cursor: pointer;
+  line-height: 1;
+}
+
+.modal-body-danger {
+  padding: 1.5rem;
+  line-height: 1.6;
+}
+
+.modal-body-danger p {
+  color: var(--text-color);
+  margin-top: 0;
+  margin-bottom: 1rem;
+}
+
+.modal-body-danger strong {
+  color: var(--primary-color);
+  font-size: 1.1rem;
+  display: block;
+  text-align: center;
+  margin-bottom: 1rem;
+  background-color: var(--input-bg-color);
+  padding: 0.5rem;
+  border-radius: 6px;
+}
+
+/* --- ¡NUEVO ESTILO! --- 
+   Clase para el párrafo de advertencia
+*/
+.text-danger-warning {
+  color: #d93025; /* Texto rojo */
+  background-color: rgba(217, 48, 37, 0.1);
+  border: 1px solid #d93025;
+  padding: 1rem;
+  border-radius: 8px;
+}
+.text-danger-warning strong {
+    color: #d93025; /* Hacemos el strong rojo también */
+    background: none;
+    padding: 0;
+    margin: 0;
+    text-align: left;
+    display: inline;
+}
+
+
+.modal-body-danger p:last-child {
+  margin-bottom: 0;
+  font-weight: bold;
+}
+
+.modal-footer-danger {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  padding: 1.5rem;
+  border-top: 1px solid var(--input-border-color);
+}
+
+/* Botones del footer (Sin cambios) */
+.btn-cancel-danger, .btn-confirm-danger {
+  height: 48px;
+  border-radius: 999px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: var(--font-family);
+  border: none;
+  padding: 0 1.8rem;
+}
+
+.btn-cancel-danger {
+  background-color: var(--input-bg-color);
+  color: var(--text-secondary-color);
+}
+.btn-cancel-danger:hover:not(:disabled) {
+  background-color: var(--input-border-color);
+  color: var(--text-color);
+}
+
+.btn-confirm-danger {
+  background-color: #d93025;
+  color: #fff;
+}
+.btn-confirm-danger:hover:not(:disabled) {
+  opacity: 0.8;
+}
+
+.btn-cancel-danger:disabled,
+.btn-confirm-danger:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

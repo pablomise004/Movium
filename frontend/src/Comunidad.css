@@ -1,0 +1,188 @@
+/* ---- frontend/src/Comunidad.css (Refactorizado con botón de Feed) ---- */
+
+.comunidad-container {
+  padding: 2rem;
+  animation: fadeIn 0.5s ease-in-out;
+  max-width: 900px;
+  margin: 0 auto;
+  position: relative; /* <-- 1. AÑADIDO: Para posicionar el botón de feed */
+}
+
+.comunidad-container h2 {
+  font-size: 2rem;
+  color: var(--text-color);
+  margin-bottom: 0.5rem;
+}
+
+.comunidad-container .subtitle {
+  font-size: 1.1rem;
+  color: var(--text-secondary-color);
+  margin-bottom: 2rem;
+}
+
+/* Pestañas (Tabs) */
+.comunidad-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+  border-bottom: 1px solid var(--input-border-color);
+}
+
+.tab-btn {
+  background: none;
+  border: none;
+  font-family: var(--font-family);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-secondary-color);
+  padding: 0 0.5rem 1rem 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-bottom: 3px solid transparent;
+}
+
+.tab-btn:hover {
+  color: var(--text-color);
+}
+
+.tab-btn.active {
+  color: var(--primary-color);
+  border-bottom-color: var(--primary-color);
+}
+
+/* Contenido de la pestaña (Grid) */
+.comunidad-content {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+/* Formulario de Búsqueda */
+.search-form {
+  margin-bottom: 1.5rem;
+  display: flex;
+}
+
+/* Contenedor del input y el icono */
+.search-input-container {
+  position: relative; 
+  flex-grow: 1; 
+}
+
+/* Input de Búsqueda */
+.search-input {
+  width: 100%;
+  height: 48px;
+  padding: 0 1rem;
+  font-size: 1rem;
+  font-family: var(--font-family);
+  color: var(--text-color);
+  background-color: var(--input-bg-color);
+  border: 1px solid var(--input-border-color);
+  border-radius: 8px;
+  box-sizing: border-box;
+  transition: border-color 0.3s, box-shadow 0.3s;
+  padding-right: 3.5rem; 
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(0, 170, 255, 0.2);
+}
+
+/* Ocultar la 'x' por defecto en input[type="search"] */
+.search-input::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+  appearance: none;
+  display: none;
+}
+.search-input::-ms-clear {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+
+/* Icono DENTRO del input */
+.search-icon-inside {
+  position: absolute;
+  right: 1rem; 
+  top: 0;
+  bottom: 0;
+  margin: auto 0; 
+  width: 26px; 
+  height: 26px; 
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 0.2s ease;
+}
+
+.search-icon-inside:hover {
+  opacity: 1;
+}
+
+/* Contador de caracteres para la búsqueda */
+.search-char-counter {
+  position: absolute;
+  bottom: 1rem; 
+  right: 3.8rem; 
+  font-size: 0.75rem;
+  color: var(--text-secondary-color);
+  user-select: none; 
+  pointer-events: none;
+}
+
+
+/* --- 2. AÑADIDO: Botón de Icono de Feed (copiado de Dashboard.css) --- */
+.btn-feed-link {
+  position: absolute;
+  top: 2rem; /* Misma distancia que el padding */
+  right: 2rem; /* Misma distancia que el padding */
+  
+  background-color: var(--input-bg-color);
+  border: 1px solid var(--input-border-color);
+  color: var(--text-secondary-color);
+  
+  width: 48px; 
+  height: 48px;
+  border-radius: 50%; /* Botón redondo */
+  
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  cursor: pointer;
+  transition: all 0.3s ease;
+  z-index: 10; /* Por si acaso */
+}
+
+.btn-feed-link:hover {
+  border-color: var(--primary-color);
+  background-color: var(--surface-color);
+  transform: scale(1.1);
+}
+
+.btn-feed-link img {
+  width: 24px; /* Tamaño del icono */
+  height: 24px;
+  opacity: 0.8; 
+}
+
+.btn-feed-link:hover img {
+  opacity: 1;
+}
+
+/* --- Media Query para el botón --- */
+@media (max-width: 767px) {
+  .btn-feed-link {
+    top: 1.5rem; /* Ajuste al padding de móvil */
+    right: 1.5rem; /* Ajuste al padding de móvil */
+    width: 42px;
+    height: 42px;
+  }
+  .btn-feed-link img {
+    width: 20px;
+    height: 20px;
+  }
+}

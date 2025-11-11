@@ -1,0 +1,83 @@
+/* ---- frontend/src/components/Sidebar.css ---- */
+.app-sidebar {
+  grid-area: sidebar;
+  background-color: var(--surface-color);
+  border-right: 1px solid var(--input-border-color);
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-sizing: border-box;
+
+  /* --- MODIFICADO --- 
+     Estilos para la animación de colapso */
+  transition: padding 0.3s ease-in-out, border 0.3s ease-in-out;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+/* --- NUEVO --- 
+   Define el estado CERRADO del sidebar */
+.app-layout.sidebar-closed .app-sidebar {
+  padding: 0;
+  border-right: none;
+}
+
+.sidebar-header {
+  text-align: center;
+  padding: 1rem 0;
+  margin-bottom: 1rem;
+}
+
+.sidebar-icon {
+  width: 60px;
+  height: 60px;
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.nav-link {
+  display: block;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 700;
+  color: var(--text-secondary-color);
+  transition: all 0.3s ease;
+}
+
+.nav-link:hover {
+  background-color: var(--input-bg-color);
+  color: var(--text-color);
+}
+
+.nav-link.active {
+  background-color: var(--primary-color);
+  color: #fff;
+}
+
+/* Estilos para el footer del sidebar */
+.sidebar-footer {
+  padding-top: 1rem;
+  border-top: 1px solid var(--input-border-color);
+
+  /* --- NUEVO --- 
+     La transición también debe aplicarse aquí */
+  transition: border-top 0.3s ease-in-out;
+}
+
+/* --- NUEVO --- 
+   Oculta el borde superior del footer cuando está cerrado */
+.app-layout.sidebar-closed .sidebar-footer {
+  border-top: 1px solid transparent;
+}
+
+
+.sidebar-logout-btn {
+  width: 100%;
+  box-sizing: border-box;
+}

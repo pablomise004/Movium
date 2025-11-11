@@ -1,0 +1,268 @@
+/* ---- frontend/src/Feed.css (AHORA SÍ, COMPLETO) ---- */
+
+/* 1. Contenedor de la página
+   (Estilo basado en .comunidad-container) */
+.feed-page-container {
+  padding: 2rem;
+  animation: fadeIn 0.5s ease-in-out;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+/* 2. Botón Volver
+   (Estilo copiado de .btn-volver en RutinaProgreso.css) */
+.feed-page-container .btn-volver {
+  background: none;
+  border: 1px solid var(--input-border-color);
+  color: var(--text-secondary-color);
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-family: var(--font-family);
+  transition: all 0.3s ease;
+  margin-bottom: 1.5rem; /* Más espacio */
+}
+.feed-page-container .btn-volver:hover {
+  background-color: var(--input-bg-color);
+  color: var(--text-color);
+}
+
+/* 3. Cabecera (Icono + Título + Subtítulo)
+   (Estilo centrado como en Dashboard o Comunidad) */
+.feed-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 2rem; /* Espacio antes del feed */
+  gap: 10px;
+}
+
+.feed-header h2 {
+  font-size: 2rem;
+  color: var(--text-color);
+  margin: 0;
+}
+
+.feed-header .subtitle {
+  font-size: 1.1rem;
+  color: var(--text-secondary-color);
+  margin: 0;
+  text-align: center;
+}
+
+/* 4. Mensaje de "No hay actividad" o "Cargando"
+   (Estilo copiado de .no-rutinas-msg o .no-data-msg) */
+.feed-empty {
+  font-size: 1.1rem;
+  color: var(--text-secondary-color);
+  text-align: center;
+  margin-top: 3rem;
+  padding: 1.5rem;
+  background-color: var(--surface-color);
+  border: 1px dashed var(--input-border-color);
+  border-radius: 12px;
+}
+
+/* 5. Contenedor del Feed */
+.feed-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem; /* Espacio entre cada item del feed */
+}
+
+/* 6. Item individual del Feed */
+.feed-item {
+  display: flex;
+  flex-direction: column; 
+  gap: 1rem; 
+  background-color: var(--surface-color);
+  border: 1px solid var(--input-border-color);
+  border-radius: 12px;
+  padding: 1.25rem 1.5rem;
+  box-shadow: var(--box-shadow);
+  transition: all 0.3s ease;
+}
+.feed-item:hover {
+  border-color: var(--primary-color);
+  transform: translateY(-2px);
+}
+
+/* 7. Cabecera del Item (Nombre, Rutina, Fecha) */
+.feed-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.25rem 1rem;
+}
+
+.feed-item-main {
+  font-size: 1.05rem;
+  color: var(--text-color);
+  word-break: break-word;
+}
+
+.feed-item-main .feed-user {
+  font-weight: 700;
+  color: var(--primary-color); /* Todos los usuarios en azul */
+}
+
+.feed-item-main .feed-rutina {
+  font-weight: 700;
+  font-style: italic;
+  color: var(--text-secondary-color);
+}
+
+.feed-fecha {
+  font-size: 0.9rem;
+  color: var(--text-secondary-color);
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+/* 8. Stats (Resumen de la sesión)
+   (Estilo copiado de RutinaProgreso.css .sesion-totales) */
+.feed-item-stats {
+  display: flex;
+  gap: 0.75rem 1.5rem; /* Más espacio horizontal */
+  font-size: 0.9rem;
+  color: var(--text-secondary-color);
+  flex-wrap: wrap;
+  padding: 0.75rem 1rem; /* Padding interno */
+  background-color: var(--input-bg-color);
+  border-radius: 8px;
+  justify-content: center; /* Centra los stats */
+}
+.feed-item-stats span {
+  white-space: nowrap;
+  font-weight: 700;
+  display: flex; /* Para alinear icono y texto */
+  align-items: center;
+  gap: 0.4rem; /* Espacio entre icono y texto */
+}
+
+/* 9. Estilos de Expansión */
+
+/* Contenedor del botón "Ver Detalles" */
+.feed-item-actions {
+  text-align: center;
+  margin-top: -0.5rem; /* Pega el botón un poco más a los stats */
+}
+
+/* Botón "Ver Detalles" */
+.btn-feed-details {
+  background: none;
+  border: none;
+  color: var(--text-secondary-color);
+  font-family: var(--font-family);
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+.btn-feed-details:hover {
+  color: var(--primary-color);
+  background-color: var(--input-bg-color);
+}
+
+/* Contenedor de los detalles (el que se expande) */
+.feed-item-details {
+  animation: fadeInDetails 0.4s ease-out;
+  border-top: 1px solid var(--input-border-color);
+  padding-top: 1rem;
+  margin-top: 0.5rem;
+}
+
+/* REUTILIZACIÓN DE ESTILOS DE RUTINAPROGRESO.CSS */
+/* (Asegúrate de que RutinaProgreso.css está importado en FeedPage.js) */
+
+.feed-item-details .ejercicio-grupo > strong {
+  font-size: 1rem; 
+  color: var(--text-color);
+  font-weight: 700;
+}
+.feed-item-details .serie-item {
+  font-size: 0.9rem; 
+  gap: 0.5rem;
+  padding-left: 0.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  color: var(--text-secondary-color);
+}
+.feed-item-details .serie-item span:first-child {
+  color: var(--text-color);
+  white-space: nowrap;
+  flex-shrink: 0;
+  min-width: 40px;
+}
+.feed-item-details .serie-item span:nth-child(2) {
+  text-align: right;
+  flex-grow: 1;
+}
+.feed-item-details .ejercicio-grupo ul {
+  padding-left: 0.5rem; /* Menos indentación */
+  list-style: none;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+/* Estilo para la etiqueta 'F' de fallo */
+.feed-item-details .fallo-tag {
+  background-color: var(--primary-color);
+  color: #fff;
+  font-size: 0.7rem;
+  padding: 0.1rem 0.3rem;
+  border-radius: 4px;
+  font-weight: bold;
+  margin-left: 0.4rem;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+/* Mensaje de error general (copiado de global.css) */
+.feed-page-container .message {
+  margin-bottom: 1.5rem;
+  padding: 0.8rem;
+  border-radius: 5px;
+  font-weight: 700;
+  text-align: center;
+  background-color: rgba(217, 48, 37, 0.1);
+  color: #d93025;
+  border: 1px solid #d93025;
+}
+
+
+/* Animación simple */
+@keyframes fadeInDetails {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Media Query para móvil */
+@media (max-width: 600px) {
+  .feed-page-container {
+    padding: 1.5rem 1rem;
+  }
+
+  .feed-header h2 {
+    font-size: 1.8rem;
+  }
+  
+  .feed-item-stats {
+    justify-content: flex-start; /* Alinea stats a la izquierda en móvil */
+    gap: 0.5rem 1rem;
+  }
+}

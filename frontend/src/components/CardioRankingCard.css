@@ -1,0 +1,119 @@
+/* ---- frontend/src/components/CardioRankingCard.css (NUEVO ARCHIVO) ---- */
+
+.cardio-ranking-card {
+  background-color: var(--surface-color);
+  border: 1px solid var(--input-border-color);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Cabecera (Título General) */
+.cardio-ranking-header {
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--input-border-color);
+  background-color: var(--input-bg-color);
+}
+
+.cardio-ranking-header strong {
+  font-size: 1.1rem;
+  color: var(--text-color);
+}
+
+/* Cuerpo (Contenedor de las 3 métricas) */
+.cardio-ranking-body {
+  padding: 1rem 1.25rem 1.5rem; /* Más padding abajo */
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem; /* Espacio entre métricas */
+}
+
+/* Sección para cada métrica (Distancia, Tiempo, Velocidad) */
+.metric-section h4 {
+  margin-top: 0;
+  margin-bottom: 0.75rem;
+  font-size: 0.95rem;
+  color: var(--text-secondary-color);
+  border-bottom: 1px dashed var(--input-border-color);
+  padding-bottom: 0.5rem;
+}
+
+/* Lista del Top 3 (reutiliza estilos de RankingCard con prefijo mini-) */
+.mini-ranking-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem; /* Menos espacio entre puestos */
+}
+
+.mini-ranking-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem; /* Menos gap */
+  padding: 0.2rem 0;
+}
+
+.mini-ranking-pos {
+  font-size: 1.1rem; /* Más pequeño */
+  font-weight: 700;
+  color: var(--text-secondary-color);
+  width: 30px; /* Más estrecho */
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.mini-ranking-user {
+  flex-grow: 1;
+  font-size: 1rem; /* Más pequeño */
+  color: var(--text-color);
+  font-weight: normal; /* Normal */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mini-ranking-value {
+  font-size: 1.1rem; /* Más pequeño */
+  font-weight: 700;
+  color: var(--text-color);
+  flex-shrink: 0;
+  text-align: right;
+}
+
+.mini-ranking-label {
+  font-size: 0.8rem; /* Más pequeño */
+  color: var(--text-secondary-color);
+  margin-left: 0.25rem;
+}
+
+/* Resaltado del usuario (igual que en RankingCard) */
+.mini-ranking-item.is-me {
+  background-color: var(--input-bg-color);
+  margin: -0.2rem -0.5rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 6px;
+}
+
+.mini-ranking-item.is-me .mini-ranking-pos,
+.mini-ranking-item.is-me .mini-ranking-user,
+.mini-ranking-item.is-me .mini-ranking-value {
+  color: var(--primary-color);
+  font-weight: 700; /* Resaltamos el peso */
+}
+.mini-ranking-item.is-me .mini-ranking-label {
+  color: var(--primary-color);
+  opacity: 0.8;
+}
+
+/* Mensaje sin datos */
+.no-ranking-data {
+  font-size: 0.85rem;
+  color: var(--text-secondary-color);
+  text-align: center;
+  font-style: italic;
+  padding: 0.5rem 0;
+  margin: 0;
+}

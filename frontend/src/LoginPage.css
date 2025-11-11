@@ -1,0 +1,261 @@
+/* ---- frontend/src/LoginPage.css ---- */
+/* * Los estilos globales (:root, body, botones)
+ * se han movido a Global.css
+ */
+
+.page-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 2rem;
+  box-sizing: border-box;
+}
+
+.form-wrapper {
+  display: flex;
+  width: 800px;
+  max-width: 90%;
+  background-color: var(--surface-color);
+  border-radius: 12px;
+  box-shadow: var(--box-shadow);
+  overflow: hidden;
+  border: 1px solid var(--input-border-color);
+  transition: background-color 0.3s, border-color 0.3s;
+}
+
+/*
+ * =========================================
+ * PANELES (IZQUIERDO Y DERECHO)
+ * =========================================
+ */
+
+.panel-izquierdo {
+  width: 50%;
+  padding: 3rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  background-color: #181818; /* Color específico para el panel */
+  color: #fff;
+}
+
+body.light .panel-izquierdo {
+  background-color: #f8f9fa;
+  color: var(--text-color);
+}
+
+.panel-izquierdo .icon {
+  width: 100px;
+  margin-bottom: 1rem;
+}
+
+.panel-izquierdo .logo-text-image {
+  width: 175px;
+  margin-bottom: 1rem;
+}
+
+.panel-izquierdo p {
+  font-size: 1.15rem;
+  font-weight: 400;
+  color: var(--text-secondary-color);
+}
+
+body.light .panel-izquierdo p {
+  color: #6c757d;
+}
+
+.panel-derecho {
+  width: 50%;
+  padding: 3rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/*
+ * =========================================
+ * FORMULARIOS (Específicos del Login)
+ * =========================================
+ */
+
+h2 {
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  font-weight: 700;
+  color: var(--text-color);
+  text-align: center;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+}
+
+/* --- ¡CAMBIO AQUÍ! --- */
+/* Este es el estilo base del input, SIN margen inferior */
+input {
+  background-color: var(--input-bg-color);
+  color: var(--text-color);
+  border: 1px solid var(--input-border-color);
+  padding: 1rem;
+  margin-bottom: 0; /* ¡Quitamos el margen de aquí! */
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: all 0.3s;
+  width: 100%; /* Aseguramos que ocupe el 100% del wrapper */
+  box-sizing: border-box; /* ¡MUY IMPORTANTE! */
+}
+
+input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+}
+
+/* --- ¡CAMBIO AQUÍ! --- */
+/* Wrapper genérico para inputs (Login y Registro) */
+.input-wrapper {
+  position: relative;
+  width: 100%;
+  margin-bottom: 1rem; /* AHORA el margen está en el wrapper */
+}
+
+/* --- ¡CAMBIO AQUÍ! --- */
+/* Wrapper de contraseña (Login y Registro) */
+.password-wrapper {
+  position: relative;
+  display: flex; /* Mantenemos flex para alinear el input */
+  align-items: center;
+  width: 100%;
+  margin-bottom: 1rem; /* AHORA el margen está en el wrapper */
+}
+
+.password-wrapper input {
+  /* El input de contraseña ya no necesita margen */
+  margin-bottom: 0; 
+}
+
+/* Botón "Mostrar" (¡centrado verticalmente!) */
+.password-toggle {
+  position: absolute;
+  right: 1rem;
+  top: 50%; /* Centrado vertical */
+  transform: translateY(-50%); /* Centrado vertical */
+  cursor: pointer;
+  user-select: none;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-secondary-color);
+  transition: color 0.3s;
+  z-index: 3; /* Por encima del contador */
+}
+
+.password-toggle:hover {
+  color: var(--text-color);
+}
+
+/*
+ * =========================================
+ * UTILIDADES (Específicas del Login)
+ * =========================================
+ */
+
+.toggle-form {
+  margin-top: 1.5rem;
+  color: var(--text-secondary-color);
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.toggle-form span {
+  color: var(--primary-color);
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.3s;
+}
+
+.toggle-form span:hover {
+  opacity: 0.8;
+}
+
+/*
+ * =========================================
+ * DISEÑO RESPONSIVO (Específico del Login)
+ * =========================================
+ */
+
+@media (max-width: 768px) {
+
+  .page-container {
+    display: flex;
+    justify-content: center; /* Centra horizontalmente */
+    align-items: center;    /* Centra verticalmente */
+    min-height: 100vh;
+    padding: 2rem;
+    box-sizing: border-box;
+  }
+  
+  .form-wrapper {
+    flex-direction: column;
+    width: 100%;
+    max-width: 500px;
+  }
+  
+  .panel-izquierdo, 
+  .panel-derecho {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .panel-izquierdo {
+    padding: 2.5rem 1.5rem;
+  }
+
+  .panel-derecho {
+    padding: 2.5rem 1.5rem;
+  }
+}
+
+/*
+ * =========================================
+ * ESTILOS PARA INPUT CON CONTADOR (¡CORREGIDOS!)
+ * =========================================
+ */
+
+/* Estilo base del contador (interno) */
+.char-counter-login {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.8rem;
+  color: var(--text-secondary-color);
+  z-index: 2; /* Debajo del botón "Mostrar" */
+  pointer-events: none; /* No se puede hacer clic en él */
+}
+
+
+/* --- LA MAGIA ESTÁ AQUÍ --- */
+
+/* 1. Contador para "Nombre de usuario" */
+.input-wrapper .char-counter-login {
+  right: 1rem; /* Pegado a la derecha */
+}
+
+/* 1b. Input de "Nombre de usuario" (le da espacio al contador) */
+.input-wrapper .input-with-counter {
+  padding-right: 4.5rem; /* Espacio para "18 / 18" */
+}
+
+
+/* 2. Contador para "Contraseña" */
+.password-wrapper .char-counter-login.password {
+  right: 5.5rem; /* Lo muevo 5.5rem desde la derecha */
+}
+
+/* 2b. Input de "Contraseña" (le da espacio AL BOTÓN Y AL CONTADOR) */
+.password-wrapper .input-with-counter.password {
+  /* (5.5rem del contador + 4.5rem del "Mostrar" ~ 10rem) */
+  padding-right: 10rem; 
+}

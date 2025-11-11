@@ -1,0 +1,119 @@
+/* ---- frontend/src/components/GuiaModal.css ---- */
+
+/* 1. Fondo Oscuro (Backdrop) */
+.modal-backdrop-guia {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7); /* Mismo fondo oscuro */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000; /* Alto z-index */
+  animation: fadeInGuia 0.3s ease;
+}
+
+@keyframes fadeInGuia { from { opacity: 0; } to { opacity: 1; } }
+
+/* 2. Contenido del Modal (Estilo Normal) */
+.modal-content-guia {
+  background-color: var(--surface-color);
+  border: 1px solid var(--input-border-color); /* Borde normal */
+  border-radius: 12px;
+  width: 90%;
+  max-width: 500px; /* Ancho estándar */
+  box-shadow: var(--box-shadow); /* Sombra normal */
+  display: flex;
+  flex-direction: column;
+  animation: slideInGuia 0.3s ease-out;
+  max-height: 80vh; /* Límite de altura */
+}
+
+@keyframes slideInGuia {
+  from { transform: translateY(-30px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* 3. Cabecera (Header) */
+.modal-header-guia {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--input-border-color); /* Borde normal */
+  flex-shrink: 0;
+}
+
+.modal-header-guia h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  color: var(--primary-color); /* Título en color primario */
+}
+
+.modal-close-btn-guia {
+  background: none;
+  border: none;
+  font-size: 2rem;
+  color: var(--text-secondary-color);
+  cursor: pointer;
+  line-height: 1;
+}
+.modal-close-btn-guia:hover {
+  color: var(--text-color);
+}
+
+
+/* 4. Cuerpo (Body) */
+.modal-body-guia {
+  padding: 1.5rem;
+  line-height: 1.7; /* Más interlineado para leer fácil */
+  overflow-y: auto; /* Scroll si el texto es muy largo */
+}
+
+.modal-body-guia p {
+  color: var(--text-color);
+  margin-top: 0;
+  margin-bottom: 1rem; /* Espacio entre párrafos */
+}
+.modal-body-guia p:last-child {
+  margin-bottom: 0;
+}
+
+.modal-body-guia strong {
+  color: var(--primary-color); /* Resaltar palabras clave */
+  font-weight: 700;
+}
+
+
+/* 5. Pie (Footer) */
+.modal-footer-guia {
+  display: flex;
+  justify-content: center; /* Centramos el botón */
+  gap: 1rem;
+  padding: 1.5rem;
+  border-top: 1px solid var(--input-border-color);
+  flex-shrink: 0;
+}
+
+/* Botón de Confirmar (Estilo principal, no rojo) */
+.btn-confirm-guia {
+  height: 48px;
+  border-radius: 999px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: var(--font-family);
+  border: none;
+  padding: 0 1.8rem;
+  
+  /* Estilo principal (azul/gradiente) */
+  background: var(--gradient);
+  color: #fff;
+}
+.btn-confirm-guia:hover {
+  opacity: 0.9;
+  transform: scale(1.03);
+}

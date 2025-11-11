@@ -1,0 +1,293 @@
+/* ---- frontend/src/Dashboard.css (Refactorizado con botón de calendario en esquina) ---- */
+
+.dashboard-container {
+  position: relative; /* ¡CLAVE! Para el botón de calendario */
+  padding: 2rem;
+  animation: fadeIn 0.5s ease-in-out;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.dashboard-container h2 {
+  font-size: 2rem;
+  color: var(--text-color);
+  margin-bottom: 0.5rem;
+}
+
+.dashboard-container .subtitle {
+  font-size: 1.1rem;
+  color: var(--text-secondary-color);
+  margin-bottom: 2rem;
+}
+
+/* --- NUEVO: Botón de Icono de Calendario --- */
+.btn-historial-calendario {
+  position: absolute;
+  top: 2rem;    /* Misma distancia que el padding */
+  right: 2rem;   /* Misma distancia que el padding */
+  
+  background-color: var(--input-bg-color);
+  border: 1px solid var(--input-border-color);
+  color: var(--text-secondary-color);
+  
+  width: 48px;   /* Botón cuadrado */
+  height: 48px;
+  border-radius: 50%; /* Botón redondo */
+  
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  cursor: pointer;
+  transition: all 0.3s ease;
+  z-index: 10; /* Por si acaso */
+}
+
+.btn-historial-calendario:hover {
+  border-color: var(--primary-color);
+  background-color: var(--surface-color);
+  transform: scale(1.1);
+}
+
+.btn-historial-calendario img {
+  width: 24px;  /* Tamaño del icono dentro del botón */
+  height: 24px;
+  opacity: 0.8; /* Le da un tono más suave al icono */
+}
+
+.btn-historial-calendario:hover img {
+  opacity: 1;
+}
+/* --- FIN NUEVO --- */
+
+
+/* Contenedor de Tarjetas (con Grid) */
+.rutinas-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, 270px);
+  justify-content: center;
+  gap: 1.25rem;
+  margin-top: 2rem;
+}
+
+/* Estilos de la Tarjeta de Rutina */
+.rutina-card {
+  background-color: var(--surface-color);
+  border: 1px solid var(--input-border-color);
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: var(--box-shadow);
+  transition: all 0.3s ease;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+/* Icono de editar */
+.btn-edit-icon {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  font-size: 1.2rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary-color);
+  transition: all 0.2s ease;
+}
+.btn-edit-icon:hover {
+  background-color: var(--input-bg-color);
+  color: var(--primary-color);
+}
+
+/* Hover de la tarjeta */
+.rutina-card:hover {
+  transform: translateY(-5px);
+}
+
+/* Título de la tarjeta */
+.rutina-card h3 {
+  font-size: 1.25rem; /* Tamaño base */
+  line-height: 1.3;
+  color: var(--text-color);
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+  padding-right: 2rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 2; /* Máximo 2 líneas */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-break: break-word; /* Evita desbordamiento */
+  min-height: calc(1.25rem * 1.3 * 2);
+}
+
+/* Descripción (párrafo genérico dentro de la card) */
+.rutina-card p {
+  font-size: 0.9rem; /* Tamaño base */
+  line-height: 1.5; /* Interlineado */
+  color: var(--text-secondary-color);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-break: break-word;
+  min-height: calc(0.9rem * 1.5 * 2);
+  margin: 0;
+}
+
+/* Párrafo específico para la fecha */
+.rutina-card p.ultima-sesion {
+  font-size: 0.8rem; /* Tamaño más pequeño */
+  line-height: 1.5;
+  color: var(--text-secondary-color);
+  min-height: calc(0.8rem * 1.5);
+  margin-top: 0.5rem; /* Espacio sobre la fecha */
+  margin-bottom: 1rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: block;
+  -webkit-line-clamp: unset;
+  -webkit-box-orient: unset;
+}
+
+
+/* Contenedor de botones */
+.card-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: auto;
+  padding-top: 1rem;
+}
+
+/* Botones dentro de la tarjeta */
+.btn-start, .btn-edit {
+  flex: 1;
+  height: 40px;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: var(--font-family);
+  border: none;
+}
+
+.btn-start {
+  background: var(--gradient);
+  color: #fff;
+}
+
+.btn-edit {
+  background-color: var(--input-bg-color);
+  color: var(--text-secondary-color);
+}
+
+.btn-edit:hover {
+  background-color: var(--input-border-color);
+  color: var(--text-color);
+}
+
+/* --- Formulario de Creación (Sin cambios) --- */
+.rutina-form {
+  max-width: 600px;
+  margin-top: 2rem;
+  background-color: var(--surface-color);
+  border: 1px solid var(--input-border-color);
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: var(--box-shadow);
+  animation: fadeIn 0.5s ease;
+  margin-left: auto;
+  margin-right: auto;
+}
+.form-group { margin-bottom: 1.5rem; }
+.form-group label { display: block; font-weight: 700; color: var(--text-secondary-color); margin-bottom: 0.5rem; }
+.form-group input[type="text"] { width: 100%;
+height: 48px; padding: 0 1rem; font-size: 1rem; font-family: var(--font-family); color: var(--text-color); background-color: var(--input-bg-color); border: 1px solid var(--input-border-color); border-radius: 8px;
+box-sizing: border-box; transition: border-color 0.3s, box-shadow 0.3s; }
+.form-group input[type="text"]:focus { outline: none; border-color: var(--primary-color);
+box-shadow: 0 0 0 3px rgba(0, 170, 255, 0.2); }
+.form-actions { display: flex; gap: 1rem; margin-top: 2rem;
+}
+.form-actions .btn-edit, .form-actions .btn-start { height: 48px; font-size: 1rem; flex: 1;
+}
+
+/* Mensaje si no hay rutinas */
+.no-rutinas-msg { font-size: 1.1rem; color: var(--text-secondary-color); text-align: center; grid-column: 1 / -1; width: 100%;
+margin-top: 2rem; }
+
+/*
+ * =========================================
+ * DISEÑO RESPONSIVO (MÓVIL / TABLET PEQUEÑA)
+ * =========================================
+ */
+@media (max-width: 767px) {
+  .dashboard-container { padding: 1.5rem 1rem; }
+  
+  /* --- NUEVO: Ajuste del botón de calendario --- */
+  .btn-historial-calendario {
+    top: 1.5rem;   /* Lo ajustamos al padding de móvil */
+    right: 1.5rem;  /* Lo ajustamos al padding de móvil */
+    width: 42px;
+    height: 42px;
+  }
+  .btn-historial-calendario img {
+    width: 20px;
+    height: 20px;
+  }
+  /* --- FIN NUEVO --- */
+
+  .rutinas-grid { gap: 1rem; grid-template-columns: repeat(2, 1fr); }
+  .rutina-card { padding: 1rem; max-width: none; }
+
+  /* Ajustes de tamaño y min-height para móvil */
+  .rutina-card h3 {
+    font-size: 1rem;
+    padding-right: 1.5rem;
+    min-height: calc(1rem * 1.3 * 2);
+  }
+  .rutina-card p { /* Descripción */
+    font-size: 0.8rem;
+    min-height: calc(0.8rem * 1.5 * 2);
+  }
+  .rutina-card p.ultima-sesion {
+    font-size: 0.75rem;
+    min-height: calc(0.75rem * 1.5); /* Recalculado */
+    margin-bottom: 0.75rem;
+  }
+  .card-actions { padding-top: 0.75rem; gap: 0.5rem; }
+  .btn-start, .btn-edit { font-size: 0.8rem; height: 36px; padding-left: 0.5rem; padding-right: 0.5rem; }
+}
+
+/*
+ * =========================================
+ * DISEÑO RESPONSIVO (PANTALLAS MUY PEQUEÑAS)
+ * =========================================
+ */
+@media (max-width: 420px) {
+  .rutinas-grid { gap: 1.25rem;
+  grid-template-columns: 1fr; } /* 1 columna */
+  .rutina-card { text-align: center; padding: 1.25rem; }
+  .rutina-card h3 { font-size: 1.1rem; padding-right: 0; min-height: calc(1.1rem * 1.3 * 2); }
+  .rutina-card p { font-size: 0.85rem; min-height: calc(0.85rem * 1.5 * 2); }
+  .rutina-card p.ultima-sesion { font-size: 0.8rem; min-height: calc(0.8rem * 1.5); text-align: center; }
+  .card-actions { justify-content: center; gap: 1rem; }
+  .btn-start, .btn-edit { flex-grow: 0;
+  flex-basis: auto; padding-left: 1.5rem; padding-right: 1.5rem; font-size: 0.9rem; }
+}

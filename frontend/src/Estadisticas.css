@@ -1,0 +1,302 @@
+/* ---- frontend/src/Estadisticas.css (Refactorizado) ---- */
+
+/* =========================================
+ * ESTILOS GENERALES DEL CONTENEDOR
+ * ========================================= */
+
+.estadisticas-container {
+  padding: 2rem;
+  animation: fadeIn 0.5s ease-in-out;
+  max-width: 900px; /* Ancho máximo del contenido */
+  margin: 0 auto; /* Centrado horizontal */
+}
+
+.estadisticas-container h2 {
+  font-size: 2rem;
+  color: var(--text-color);
+  margin-bottom: 0.5rem;
+  text-align: center; /* Centramos el título principal */
+}
+
+.estadisticas-container .subtitle {
+  font-size: 1.1rem;
+  color: var(--text-secondary-color);
+  margin-bottom: 2rem;
+  text-align: center; /* Centramos el subtítulo */
+}
+
+/* =========================================
+ * PESTAÑAS (TABS)
+ * ========================================= */
+
+.comunidad-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+  border-bottom: 1px solid var(--input-border-color); /* Línea inferior para separar */
+  justify-content: center; /* Centramos las pestañas */
+}
+
+.tab-btn {
+  background: none;
+  border: none;
+  font-family: var(--font-family);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-secondary-color); /* Color inactivo */
+  padding: 0 0.5rem 1rem 0.5rem; /* Padding inferior para el borde */
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-bottom: 3px solid transparent; /* Borde inferior transparente por defecto */
+}
+
+.tab-btn:hover {
+  color: var(--text-color); /* Color al pasar el ratón */
+}
+
+.tab-btn.active {
+  color: var(--primary-color); /* Color activo */
+  border-bottom-color: var(--primary-color); /* Borde inferior visible y coloreado */
+}
+
+/* =========================================
+ * SECCIÓN "MIS PRS"
+ * ========================================= */
+
+/* --- Filtros --- */
+.pr-filtros {
+  display: flex;
+  padding-bottom: 2rem; /* Espacio antes de la lista */
+  gap: 1rem; /* Espacio entre input y select */
+  flex-wrap: wrap; /* Permite que pasen a la siguiente línea si no caben */
+}
+
+.pr-search-input {
+  flex: 1; /* Ocupa espacio disponible */
+  min-width: 180px; /* Evita que colapse demasiado */
+  height: 48px;
+  padding: 0 1rem;
+  font-size: 1rem;
+  font-family: var(--font-family);
+  color: var(--text-color);
+  background-color: var(--input-bg-color);
+  border: 1px solid var(--input-border-color);
+  border-radius: 8px;
+  box-sizing: border-box; /* Incluye padding y borde en el tamaño total */
+  transition: all 0.3s;
+}
+
+.pr-search-input:focus {
+  outline: none; /* Quita el borde por defecto del navegador */
+  border-color: var(--primary-color); /* Borde coloreado al enfocar */
+  box-shadow: 0 0 0 3px rgba(0, 170, 255, 0.2); /* Sombra suave al enfocar */
+}
+
+/* Selector de grupo (reutiliza/comparte estilo con modal si aplica) */
+.modal-group-select { /* Asegúrate que esta clase la usa tu select en Estadisticas.js */
+  flex: 1; /* Ocupa espacio disponible */
+  min-width: 180px; /* Evita que colapse demasiado */
+  height: 48px;
+  padding: 0 0.8rem;
+  font-size: 1rem;
+  font-family: var(--font-family);
+  color: var(--text-color);
+  background-color: var(--input-bg-color);
+  border: 1px solid var(--input-border-color);
+  border-radius: 8px;
+  box-sizing: border-box;
+  transition: all 0.3s;
+  cursor: pointer; /* Indica que es interactivo */
+}
+
+.modal-group-select:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(0, 170, 255, 0.2);
+}
+
+/* --- Lista de PRs --- */
+.pr-list-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem; /* Espacio entre tarjetas de PR */
+}
+
+.pr-item-card {
+  background-color: var(--surface-color); /* Fondo de la tarjeta */
+  border: 1px solid var(--input-border-color); /* Borde sutil */
+  border-radius: 8px; /* Bordes redondeados */
+  padding: 1rem; /* Espacio interior */
+}
+
+.pr-item-header {
+  display: flex;
+  justify-content: space-between; /* Nombre a la izquierda, grupo a la derecha */
+  align-items: center; /* Centrado vertical */
+  margin-bottom: 1rem; /* Espacio antes de los récords */
+  border-bottom: 1px solid var(--input-border-color); /* Línea separadora */
+  padding-bottom: 0.75rem; /* Espacio sobre la línea */
+}
+
+.pr-item-header strong {
+  font-size: 1.1rem;
+  color: var(--text-color); /* Nombre del ejercicio */
+}
+
+.pr-item-header span {
+  font-size: 0.9rem;
+  color: var(--text-secondary-color); /* Grupo muscular (texto secundario) */
+  background-color: var(--input-bg-color); /* Fondo sutil para la etiqueta */
+  padding: 0.2rem 0.5rem; /* Padding de la etiqueta */
+  border-radius: 6px; /* Bordes redondeados de la etiqueta */
+  white-space: nowrap; /* Evita que el grupo muscular se parta */
+}
+
+.pr-records-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); /* Columnas flexibles */
+  gap: 1rem; /* Espacio entre los récords */
+}
+
+.pr-record-item {
+  text-align: center; /* Centra el texto */
+  background-color: var(--input-bg-color); /* Fondo ligeramente distinto */
+  padding: 1rem;
+  border-radius: 8px;
+}
+
+.pr-record-item strong {
+  display: block; /* Ocupa su propia línea */
+  font-size: 0.9rem;
+  color: var(--text-secondary-color); /* Texto del título (Mayor Peso, etc.) */
+  margin-bottom: 0.5rem;
+}
+
+.pr-record-item span {
+  display: block; /* Ocupa su propia línea */
+  font-size: 1.75rem; /* Tamaño grande para el valor */
+  font-weight: 700; /* Negrita */
+  color: var(--text-color); /* Color del valor */
+}
+
+/* =========================================
+ * SECCIÓN "RANKINGS DE AMIGOS"
+ * ========================================= */
+
+/* Título de sección (para "Destacados" y "Comparar") */
+.section-title {
+  font-size: 1.5rem; /* Un poco más pequeño que el h2 principal */
+  color: var(--text-color);
+  margin-top: 2.5rem; /* Espacio antes del título */
+  margin-bottom: 1.5rem; /* Espacio después del título */
+  padding-bottom: 0.5rem;
+  text-align: center; /* Centra el título */
+  border-bottom: none; /* Sin línea inferior por defecto */
+}
+
+/* Estilo especial para el título que actúa como separador */
+.section-title.separator {
+  margin-top: 3rem; /* Más espacio arriba */
+  padding-top: 2rem; /* Espacio debajo de la línea */
+  border-top: 1px solid var(--input-border-color); /* Línea arriba */
+}
+
+/* Grid para las tarjetas de podio (RankingCard y CardioRankingCard) */
+.ranking-grid-container {
+  display: grid;
+  /* Mínimo 320px por tarjeta, crea columnas automáticamente */
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 1.5rem; /* Espacio entre tarjetas */
+}
+
+/* Contenedor para los controles del comparador (botón Seleccionar Ejercicio) */
+.comparator-controls {
+  max-width: 400px; /* Limita el ancho del botón */
+  margin-bottom: 1.5rem; /* Espacio antes del botón */
+  margin-left: auto; /* Centra el contenedor */
+  margin-right: auto; /* Centra el contenedor */
+}
+
+/* Reutiliza el estilo del botón transparente global */
+.comparator-controls .transparent-btn {
+  width: 100%; /* El botón ocupa todo el ancho del contenedor */
+}
+
+/* Espacio extra arriba para la grid de resultados del comparador */
+.ranking-grid-container.results-comparator {
+  margin-top: 1.5rem;
+}
+
+/* Mensaje 'Sin datos' específico del comparador */
+.no-data-msg.comparator-no-data {
+  grid-column: 1 / -1; /* Ocupa todas las columnas de la grid */
+  margin-top: 1rem;
+  border: none; /* Sin borde */
+  background: transparent; /* Sin fondo */
+  padding: 0;
+  font-size: 1rem;
+  text-align: center; /* Asegura centrado */
+  color: var(--text-secondary-color); /* Texto secundario */
+  font-style: italic; /* Cursiva */
+}
+
+/* =========================================
+ * MENSAJES GENÉRICOS (Sin datos)
+ * ========================================= */
+
+.no-data-msg {
+  text-align: center;
+  color: var(--text-secondary-color);
+  font-style: italic;
+  padding: 2rem;
+  background-color: var(--surface-color); /* Fondo sutil */
+  border: 1px dashed var(--input-border-color); /* Borde discontinuo */
+  border-radius: 12px; /* Bordes redondeados */
+  margin-top: 1rem; /* Espacio arriba */
+  /* Si está dentro de una grid, necesita ocupar todas las columnas */
+  grid-column: 1 / -1;
+}
+
+
+/* =========================================
+ * MEDIA QUERIES (RESPONSIVE)
+ * ========================================= */
+
+@media (max-width: 600px) { /* Ajusta este breakpoint si es necesario */
+
+  .estadisticas-container {
+    padding: 1.5rem 1rem; /* Menos padding en móvil */
+  }
+
+  /* --- Ajuste para Filtros "Mis PRs" --- */
+  .pr-filtros {
+    flex-direction: column; /* Apila los filtros verticalmente */
+    gap: 1rem; /* Reduce el espacio vertical entre ellos */
+  }
+
+  .pr-search-input,
+  .modal-group-select { /* Asegúrate que es la clase correcta del select */
+    width: 100%; /* Ocupan todo el ancho disponible */
+    min-width: 0; /* Anula el min-width de escritorio */
+    flex: none; /* Anula las propiedades flex de escritorio */
+  }
+
+  /* --- Ajuste para Títulos --- */
+  .estadisticas-container h2 {
+    font-size: 1.8rem; /* Título principal un poco más pequeño */
+  }
+  .section-title {
+    font-size: 1.3rem; /* Títulos de sección un poco más pequeños */
+  }
+
+  .pr-record-item span {
+    font-size: 1.5rem; /* Valor del récord un poco más pequeño */
+  }
+
+  /* --- Ajuste para Tarjetas de Ranking --- */
+  .ranking-grid-container {
+    /* auto-fit se encargará de poner 1 columna si no caben 2 de 320px */
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Reducimos un poco el minmax */
+  }
+
+}

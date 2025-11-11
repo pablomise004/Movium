@@ -1,0 +1,123 @@
+/* ---- frontend/src/AppLayout.css ---- */
+.app-layout {
+  display: grid;
+  height: 100vh;
+  grid-template-areas:
+    "header header"
+    "sidebar content";
+  
+  /* 1. ¡Añadimos la transición! Esto animará el cambio de columnas */
+  transition: grid-template-columns 0.3s ease-in-out;
+}
+
+/* 2. Estado ABIERTO (el que ya tenías) */
+.app-layout.sidebar-open {
+  grid-template-columns: 240px 1fr;
+  grid-template-rows: 70px 1fr;
+}
+
+/* 3. Estado CERRADO */
+.app-layout.sidebar-closed {
+  /* El sidebar ahora ocupa 0px, el contenido (1fr) ocupa todo */
+  grid-template-columns: 0px 1fr; 
+  grid-template-rows: 70px 1fr;
+}
+
+
+/* ... (El resto de tus estilos .app-header, .app-sidebar, .app-content) ... */
+.app-header { grid-area: header; }
+.app-sidebar { grid-area: sidebar; }
+
+.app-content {
+  grid-area: content;
+  background-color: var(--bg-color);
+  padding: 0; 
+  overflow-y: auto; 
+}
+
+/*
+ * =========================================
+ * ESTILOS RESPONSIVE (MÓVIL / TABLET)
+ * =========================================
+ */
+@media (max-width: 767px) {
+
+  /* 1. Cambiamos el grid: El contenido ocupa todo.
+     El sidebar ya NO forma parte del grid principal. */
+  .app-layout {
+    grid-template-areas:
+      "header"
+      "content";
+    grid-template-columns: 1fr; /* Columna única */
+  }
+
+  /* 2. Anulamos las transiciones del grid de desktop */
+  .app-layout.sidebar-open {
+    grid-template-columns: 1fr;
+  }
+  .app-layout.sidebar-closed {
+    grid-template-columns: 1fr;
+  }
+
+  /* 3. ¡La clave! Convertimos el Sidebar en un "cajón" (drawer) */
+  .app-sidebar {
+    /* Lo sacamos del flujo del grid */
+    grid-area: unset;
+    
+    /* Lo posicionamos de forma fija sobre la pantalla */
+    position: fixed;
+    left: 0;
+    z-index: 1000; /* Por encima de todo (menos del overlay) */
+    
+    /* Le añadimos una sombra para que destaque */
+    box-shadow: 5px 0px 20px rgba(0, 0, 0, 0.3);
+    
+    /* La animación de "slide" (deslizamiento) */
+    transform: translateX(-100%); /* Oculto por defecto fuera de la pantalla */
+    transition: transform 0.3s ease-in-out;
+
+    /* --- ✅ CAMBIOS AQUÍ --- */
+    width: 240px;      /* (Era 260px) Más estrecho */
+    top: 70px;         /* (Era 0) Empieza DEBAJO del header (altura 70px) */
+    bottom: 0;         /* Llega hasta abajo */
+    height: auto;      /* (Era 100vh) Altura automática */
+  }
+  
+  /* 4. Estado ABIERTO en móvil: lo deslizamos a la vista */
+  .app-layout.sidebar-open .app-sidebar {
+    transform: translateX(0);
+  }
+  
+  /* 5. Estado CERRADO en móvil: nos aseguramos que esté oculto */
+  .app-layout.sidebar-closed .app-sidebar {
+    transform: translateX(-100%);
+    
+    /* Anulamos los estilos de "cerrado" de desktop */
+    padding: 1rem;
+    border-right: 1px solid var(--input-border-color);
+  }
+  
+  /* 6. Estilos del Overlay (fondo oscuro) */
+  .sidebar-overlay {
+    display: block;
+    position: fixed;
+    left: 0;
+    width: 100%;
+    background: rgba(0, 0, 0, 0.5); /* Negro semitransparente */
+    z-index: 999; /* Justo debajo del sidebar */
+    
+    /* Animación de fade-in */
+    animation: fadeInOverlay 0.3s ease;
+
+    /* --- ✅ CAMBIOS AQUÍ --- */
+    top: 70px;         /* (Era 0) Empieza DEBAJO del header */
+    bottom: 0;         /* Llega hasta abajo */
+    height: auto;      /* (Era 100%) */
+  }
+  
+  /* 7. Animación simple de fade-in */
+  @keyframes fadeInOverlay {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+}

@@ -1,0 +1,115 @@
+/* ---- frontend/src/components/AmigoPRsModal.css (ACTUALIZADO) ---- */
+
+/* Estilos genéricos de modal (sin cambios) */
+.modal-backdrop-prs {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background-color: rgba(0, 0, 0, 0.7); display: flex;
+  align-items: center; justify-content: center; z-index: 1000;
+  animation: fadeIn 0.3s ease;
+}
+.modal-content-prs {
+  background-color: var(--surface-color);
+  border: 1px solid var(--input-border-color);
+  border-radius: 12px; width: 90%; max-width: 600px; /* Un poco más ancho */
+  max-height: 80vh; box-shadow: var(--box-shadow);
+  display: flex; flex-direction: column;
+  animation: slideIn 0.3s ease-out; overflow: hidden;
+}
+.modal-header-prs {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 1rem 1.5rem; border-bottom: 1px solid var(--input-border-color);
+  flex-shrink: 0;
+}
+.modal-header-prs h3 { margin: 0; font-size: 1.25rem; color: var(--text-color); }
+.modal-close-btn-prs {
+  background: none; border: none; font-size: 2rem;
+  color: var(--text-secondary-color); cursor: pointer;
+  line-height: 1; padding: 0; flex-shrink: 0;
+}
+
+/* --- NUEVO: Filtro de Búsqueda (como en SelectorEjerciciosModal) --- */
+.modal-filters-prs {
+  display: flex;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--input-border-color);
+  flex-shrink: 0;
+}
+.modal-search-prs {
+  flex: 1; /* Ocupa todo */
+  height: 48px; padding: 0 1rem; font-size: 1rem;
+  font-family: var(--font-family); color: var(--text-color);
+  background-color: var(--input-bg-color);
+  border: 1px solid var(--input-border-color); border-radius: 8px;
+  box-sizing: border-box; transition: all 0.3s;
+}
+.modal-search-prs:focus {
+  outline: none; border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(0, 170, 255, 0.2);
+}
+
+/* --- NUEVO: Contenedor de la lista scrollable --- */
+.modal-list-prs {
+  overflow-y: auto;
+  flex-grow: 1;
+  padding: 1rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* --- NUEVO: Tarjeta para cada PR --- */
+.pr-item-card {
+  background-color: var(--input-bg-color); /* Fondo más oscuro */
+  border: 1px solid var(--input-border-color);
+  border-radius: 8px;
+  padding: 1rem;
+}
+.pr-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid var(--input-border-color);
+  padding-bottom: 0.75rem;
+}
+.pr-item-header strong {
+  font-size: 1.1rem;
+  color: var(--text-color);
+}
+.pr-item-header span {
+  font-size: 0.9rem;
+  color: var(--text-secondary-color);
+  background-color: var(--surface-color); /* Fondo más oscuro */
+  padding: 0.2rem 0.5rem;
+  border-radius: 6px;
+}
+
+
+/* Reutilizamos los estilos de las tarjetas de récords */
+.records-grid-modal {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+.record-item-modal {
+  text-align: center;
+  background-color: var(--surface-color); /* Fondo más oscuro */
+  padding: 1rem;
+  border-radius: 8px;
+}
+.record-item-modal strong {
+  display: block; font-size: 0.9rem;
+  color: var(--text-secondary-color); margin-bottom: 0.5rem;
+}
+.record-item-modal span {
+  display: block; font-size: 1.75rem;
+  font-weight: 700; color: var(--text-color);
+}
+
+/* Reutilizamos .no-data-msg */
+.no-data-msg-modal {
+  text-align: center; color: var(--text-secondary-color);
+  font-style: italic; padding: 2rem 0;
+  background-color: var(--surface-color);
+  border-radius: 12px;
+}

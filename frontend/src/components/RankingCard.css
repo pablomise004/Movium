@@ -1,0 +1,114 @@
+/* ---- frontend/src/components/RankingCard.css (NUEVO ARCHIVO) ---- */
+
+.ranking-podium-card {
+  background-color: var(--surface-color);
+  border: 1px solid var(--input-border-color);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* Para que el header se vea bien */
+}
+
+/* Cabecera (Título del ejercicio) */
+.ranking-podium-header {
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--input-border-color);
+  background-color: var(--input-bg-color); /* Un fondo más oscuro */
+}
+
+.ranking-podium-header strong {
+  font-size: 1.1rem;
+  color: var(--text-color);
+}
+
+/* Cuerpo (Lista del podio) */
+.ranking-podium-body {
+  padding: 1rem 1.25rem;
+}
+
+.podium-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem; /* Espacio entre el 1º, 2º y 3º */
+}
+
+.podium-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px dashed var(--input-border-color);
+}
+.podium-item:last-child {
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+/* Posición y Medalla */
+.podium-pos {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-secondary-color);
+  width: 40px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+/* Nombre de usuario */
+.podium-user {
+  flex-grow: 1;
+  font-size: 1.1rem;
+  color: var(--text-color);
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Valor (100 kg, 10 km) */
+.podium-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-color);
+  flex-shrink: 0;
+  text-align: right;
+}
+
+.podium-label {
+  font-size: 0.9rem;
+  color: var(--text-secondary-color);
+  margin-left: 0.25rem;
+}
+
+/* ¡Clave! Resaltar tu propia puntuación */
+.podium-item.is-me {
+  background-color: var(--input-bg-color);
+  margin: -0.5rem -0.75rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  border-bottom: none; /* Quitamos el dashed */
+}
+
+.podium-item.is-me .podium-pos,
+.podium-item.is-me .podium-user,
+.podium-item.is-me .podium-value {
+  color: var(--primary-color);
+}
+.podium-item.is-me .podium-label {
+  color: var(--primary-color);
+  opacity: 0.8;
+}
+
+
+/* Mensaje de "Sin Datos" */
+.podium-no-data {
+  font-size: 0.9rem;
+  color: var(--text-secondary-color);
+  text-align: center;
+  font-style: italic;
+  padding: 1rem 0;
+  margin: 0;
+}

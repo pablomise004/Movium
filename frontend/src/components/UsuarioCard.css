@@ -1,0 +1,80 @@
+/* ---- frontend/src/components/UsuarioCard.css (NUEVO ARCHIVO) ---- */
+
+.usuario-card {
+  background-color: var(--surface-color);
+  border: 1px solid var(--input-border-color);
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: var(--box-shadow);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 1rem;
+  transition: all 0.3s ease;
+}
+
+.usuario-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--primary-color);
+}
+
+.usuario-info {
+  text-align: center;
+}
+
+.usuario-info strong {
+  display: block;
+  font-size: 1.25rem;
+  color: var(--text-color);
+  word-break: break-word;
+}
+
+.usuario-info span {
+  font-size: 0.9rem;
+  color: var(--text-secondary-color);
+}
+
+.usuario-actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+/* Botones genéricos (reutilizamos clases de Dashboard) */
+.btn-card-action {
+  flex: 1;
+  height: 40px;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: var(--font-family);
+  border: none;
+}
+
+/* Botón Añadir/Ver (Verde/Azul) */
+.btn-card-add {
+  background: var(--gradient);
+  color: #fff;
+}
+
+/* Botón Eliminar (Gris) */
+.btn-card-delete {
+  background-color: var(--input-bg-color);
+  color: var(--text-secondary-color);
+}
+.btn-card-delete:hover {
+  background-color: var(--input-border-color);
+  color: var(--text-color);
+}
+
+/* Botón Eliminar (Rojo - para 'Mis Amigos') */
+.btn-card-unfriend {
+  background-color: rgba(217, 48, 37, 0.1);
+  color: #d93025;
+  border: 1px solid #d93025;
+}
+.btn-card-unfriend:hover {
+  background-color: #d93025;
+  color: #fff;
+}

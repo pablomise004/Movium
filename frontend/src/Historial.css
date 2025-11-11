@@ -1,0 +1,187 @@
+/* ---- frontend/src/Historial.css (REFACTORIZADO CON HOVER CORRECTO Y SUTIL) ---- */
+
+/* Contenedor principal de la página */
+.historial-container {
+  padding: 2rem;
+  animation: fadeIn 0.5s ease-in-out;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+/* Contenedor del calendario */
+.calendario-wrapper {
+  background-color: var(--surface-color);
+  border: 1px solid var(--input-border-color);
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: var(--box-shadow);
+  margin-top: 2rem;
+}
+
+
+/* * =========================================
+ * ESTILOS 'react-calendar' (Tema Oscuro)
+ * =========================================
+ */
+
+/* Contenedor general del calendario */
+.calendario-wrapper .react-calendar {
+  width: 100%;
+  max-width: 100%;
+  background: var(--surface-color); 
+  border: none;
+  font-family: var(--font-family);
+  line-height: 1.5;
+}
+
+/* Botones de navegación (Mes/Año y Flechas) */
+.calendario-wrapper .react-calendar__navigation button {
+  color: var(--text-color);
+  min-width: 44px;
+  background: none;
+  font-size: 1.1rem;
+  font-weight: bold;
+  border-radius: 8px;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* Hover "tranquilito" para la navegación */
+.calendario-wrapper .react-calendar__navigation button:hover,
+.calendario-wrapper .react-calendar__navigation button:focus {
+  background-color: var(--input-bg-color); /* Fondo gris oscuro sutil */
+  color: var(--text-color); /* Mantiene el color de texto */
+  outline: none; 
+}
+.calendario-wrapper .react-calendar__navigation button:disabled {
+  color: var(--input-border-color);
+  background-color: transparent;
+}
+
+/* Nombres de los días de la semana (L, M, X...) */
+.calendario-wrapper .react-calendar__month-view__weekdays__weekday {
+  padding: 0.5em;
+  color: var(--text-secondary-color);
+  text-decoration: none;
+  font-size: 0.8rem;
+  font-weight: bold;
+}
+.calendario-wrapper .react-calendar__month-view__weekdays__weekday abbr {
+  text-decoration: none;
+}
+
+/* --- ¡CAMBIOS IMPORTANTES AQUÍ! --- */
+
+/* Días (los números) - ESTADO BASE */
+/* Aumentamos la especificidad usando nuestro wrapper y 'button' */
+.calendario-wrapper button.react-calendar__tile {
+  position: relative; 
+  padding: 1em 0.5em;
+  background: none; /* Sin fondo */
+  border: 2px solid transparent; /* Borde para que no "salte" */
+  color: var(--text-color); /* Texto blanco */
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+/* Hover y Focus sobre un DÍA NORMAL */
+.calendario-wrapper button.react-calendar__tile:hover,
+.calendario-wrapper button.react-calendar__tile:focus {
+  /* ¡Esta es la clave! Usamos tu gris oscuro sutil */
+  background-color: var(--input-bg-color); 
+  border-color: var(--input-bg-color); /* Borde a juego */
+  color: var(--text-color); /* El texto se mantiene blanco */
+  outline: none;
+}
+
+/* Hover/Focus en un día DESHABILITADO (otro mes) */
+.calendario-wrapper button.react-calendar__tile:disabled:hover,
+.calendario-wrapper button.react-calendar__tile:disabled:focus {
+  background-color: transparent; /* No hace NADA */
+  border-color: transparent;
+  cursor: default;
+}
+
+/* Día de "Hoy" (Estado base) */
+.calendario-wrapper button.react-calendar__tile--now {
+  background-color: var(--input-bg-color);
+  border-color: var(--input-border-color); /* Borde gris más claro */
+  font-weight: bold;
+}
+
+/* Hover/Focus sobre el día de "Hoy" */
+.calendario-wrapper button.react-calendar__tile--now:hover,
+.calendario-wrapper button.react-calendar__tile--now:focus {
+  background-color: var(--input-bg-color); /* Mantiene su fondo */
+  border-color: var(--primary-color); /* El borde se pone azul "premium" */
+  outline: none;
+}
+
+/* Días de otros meses (atenuados) */
+.calendario-wrapper .react-calendar__month-view__days__day--neighboringMonth {
+  color: var(--text-secondary-color); /* Usamos el gris de texto secundario */
+  opacity: 0.4; /* ¡Lo hacemos muy transparente! */
+  cursor: default;
+}
+
+/* * =========================================
+ * CLASES PERSONALIZADAS (Puntos)
+ * (Sin cambios en esta sección)
+ * =========================================
+ */
+
+/* 1. El CONTENEDOR de los puntos */
+.dot-container {
+  position: absolute;
+  bottom: 8px; 
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  display: flex;
+  flex-wrap: nowrap; 
+  justify-content: center;
+  align-items: center;
+  gap: 3px; 
+  max-width: 90%; 
+  overflow: hidden; 
+  pointer-events: none; /* Los puntos no interfieren con el clic */
+}
+
+/* 2. El estilo del PUNTO individual */
+.dot {
+  width: 5px;  
+  height: 5px;
+  border-radius: 50%;
+  flex-shrink: 0; 
+  /* El 'backgroundColor' se aplica inline desde React */
+}
+
+/* Estilo para el día que está SELECCIONADO (después del clic) */
+.dia-seleccionado,
+.dia-seleccionado:hover,
+.dia-seleccionado:focus {
+  background-color: var(--primary-color);
+  color: #fff;
+  font-weight: bold;
+  border-color: var(--primary-color); /* Borde de 2px */
+}
+
+/* Hacemos que los puntos sean visibles sobre el fondo azul */
+.dia-seleccionado .dot {
+  background-color: #fff ; 
+}
+
+.historial-container .btn-volver {
+ background: none;
+ border: 1px solid var(--input-border-color); 
+ color: var(--text-secondary-color);
+ padding: 0.5rem 1rem;
+ border-radius: 8px;
+ cursor: pointer;
+ font-size: 0.9rem;
+ font-family: var(--font-family);
+ transition: all 0.3s ease;
+ margin-bottom: 1.5rem;
+ width: fit-content; 
+ flex-grow: 0; 
+}
