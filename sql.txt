@@ -1,0 +1,227 @@
+-- =======================================================
+-- SCRIPT DE CREACIÓN - MOVIUM_DB
+-- Versión 6.0 (Lógica de Reps por Rango/Fallo)
+-- =======================================================
+
+DROP DATABASE IF EXISTS movium_db;
+CREATE DATABASE movium_db CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+USE movium_db;
+
+CREATE TABLE `usuarios` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `nombre_usuario` varchar(18) COLLATE utf8mb4_bin NOT NULL,
+  `password_hash` varchar(255) NOT NULL,
+  `correo_electronico` varchar(100) DEFAULT NULL,
+  `rol` varchar(20) NOT NULL DEFAULT 'usuario',
+  `fecha_registro` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `nombre_usuario_idx` (`nombre_usuario`),
+  UNIQUE KEY `correo_electronico_idx` (`correo_electronico`)
+) ENGINE=InnoDB;
+
+CREATE TABLE `perfiles` (
+  `usuario_id` int(11) NOT NULL,
+  `nombre_real` varchar(100) DEFAULT NULL,
+  `apellidos` varchar(150) DEFAULT NULL,
+  `fecha_nacimiento` date DEFAULT NULL,
+  `altura_cm` smallint(3) DEFAULT NULL,
+  `peso_kg` DECIMAL(5,2) DEFAULT NULL,
+  `telefono` VARCHAR(20) DEFAULT NULL,
+  `direccion` varchar(255) DEFAULT NULL,
+  `ha_visto_guia_inicio` BIT(1) NOT NULL DEFAULT 0,
+  `ha_visto_guia_rutina` BIT(1) NOT NULL DEFAULT 0,
+  `ha_visto_guia_records` BIT(1) NOT NULL DEFAULT 0,
+  `ha_visto_guia_comunidad` BIT(1) NOT NULL DEFAULT 0,
+  `ha_visto_guia_entreno` BIT(1) NOT NULL DEFAULT 0,
+
+  PRIMARY KEY (`usuario_id`),
+  CONSTRAINT `fk_perfil_usuario` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+-- 3. Tabla Rutinas (¡CON ORDEN Y COLOR!)
+CREATE TABLE `rutinas` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `usuario_id` int(11) NOT NULL,
+  `nombre` varchar(38) NOT NULL,
+  `dias_semana` varchar(60) DEFAULT NULL,
+  `fecha_creacion` timestamp NOT NULL DEFAULT current_timestamp(),
+  `orden` SMALLINT NOT NULL DEFAULT 0,
+  `color_tag` VARCHAR(7) DEFAULT NULL COMMENT 'Color Hex (ej: #FF5733)',
+
+  PRIMARY KEY (`id`),
+  KEY `idx_usuario_rutina` (`usuario_id`),
+  CONSTRAINT `fk_rutina_usuario` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+CREATE TABLE `ejercicios` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `nombre` varchar(100) NOT NULL,
+  `grupo_muscular` varchar(50) DEFAULT NULL,
+  `tipo` ENUM('fuerza', 'calistenia', 'cardio') NOT NULL DEFAULT 'fuerza',
+  `descripcion` text DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `nombre_ejercicio_idx` (`nombre`)
+) ENGINE=InnoDB;
+
+CREATE TABLE `rutina_ejercicios` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `rutina_id` int(11) NOT NULL,
+  `ejercicio_id` int(11) NOT NULL,
+  `orden` smallint(3) UNSIGNED DEFAULT 1,
+  PRIMARY KEY (`id`),
+  CONSTRAINT `fk_re_rutina` FOREIGN KEY (`rutina_id`) REFERENCES `rutinas` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_re_ejercicio` FOREIGN KEY (`ejercicio_id`) REFERENCES `ejercicios` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+CREATE TABLE `rutina_objetivos` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `rutina_ejercicio_id` int(11) NOT NULL,
+  `num_serie` smallint(3) UNSIGNED DEFAULT 1,
+  `tipo_rep_objetivo` ENUM('rango', 'fijo', 'fallo') NOT NULL DEFAULT 'fijo',
+  `reps_min_objetivo` smallint(3) UNSIGNED DEFAULT NULL,
+  `reps_max_objetivo` smallint(3) UNSIGNED DEFAULT NULL,
+  `peso_kg_objetivo` decimal(5,2) DEFAULT NULL,
+  `tiempo_min_objetivo` smallint(4) UNSIGNED DEFAULT NULL,
+  `distancia_km_objetivo` decimal(5,2) DEFAULT NULL,
+  `velocidad_kmh_objetivo` smallint(3) UNSIGNED DEFAULT NULL,
+  `descanso_seg_post` smallint(4) UNSIGNED DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  CONSTRAINT `fk_objetivo_rutina_ejercicio` FOREIGN KEY (`rutina_ejercicio_id`) REFERENCES `rutina_ejercicios` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+CREATE TABLE `sesiones_entrenamiento` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `usuario_id` int(11) NOT NULL,
+  `rutina_id` int(11) DEFAULT NULL, 
+  `fecha_inicio` timestamp NOT NULL DEFAULT current_timestamp(),
+  `fecha_fin` timestamp NULL DEFAULT NULL,
+  `notas_sesion` VARCHAR(1000) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_usuario_sesion` (`usuario_id`),
+  KEY `idx_rutina_sesion` (`rutina_id`),
+  CONSTRAINT `fk_sesion_usuario` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_sesion_rutina` FOREIGN KEY (`rutina_id`) REFERENCES `rutinas` (`id`) ON DELETE SET NULL 
+) ENGINE=InnoDB;
+
+CREATE TABLE `series_realizadas` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `sesion_id` int(11) NOT NULL,
+  `ejercicio_id` int(11) NOT NULL,
+  `orden_ejercicio_rutina` smallint(3) UNSIGNED DEFAULT NULL, 
+  `num_serie` smallint(3) UNSIGNED NOT NULL,
+  `repeticiones_realizadas` SMALLINT(3) UNSIGNED DEFAULT NULL COMMENT 'Guarda el número de reps (ej: 9)',
+  `fue_al_fallo` BIT(1) NOT NULL DEFAULT 0 COMMENT '0 = No, 1 = Sí',
+  `peso_kg_usado` decimal(5,2) DEFAULT NULL,
+  `tiempo_min_realizado` smallint(4) UNSIGNED DEFAULT NULL,
+  `distancia_km_realizada` decimal(5,2) DEFAULT NULL,
+  `tiempo_descanso_post_seg` smallint(4) UNSIGNED DEFAULT NULL,
+  `fecha_hora_completada` timestamp NOT NULL DEFAULT current_timestamp(),
+  `notas_serie` text DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  
+KEY `idx_sesion_serie` (`sesion_id`),
+  KEY `idx_ejercicio_serie` (`ejercicio_id`),
+  CONSTRAINT `fk_serie_sesion` FOREIGN KEY (`sesion_id`) REFERENCES `sesiones_entrenamiento` (`id`) ON DELETE CASCADE, 
+  CONSTRAINT `fk_serie_ejercicio` FOREIGN KEY (`ejercicio_id`) REFERENCES `ejercicios` (`id`) ON DELETE CASCADE 
+) ENGINE=InnoDB;
+
+-- =======================================================
+-- DATOS INICIALES (CON DESCRIPCIONES Y TIPOS)
+-- (Sin cambios)
+-- =======================================================
+INSERT INTO `ejercicios` (`nombre`, `grupo_muscular`, `tipo`, `descripcion`) VALUES
+-- PECHO
+('Press de Banca con Barra', 'Pecho', 'fuerza', 'Acostado en un banco plano, bajar la barra al pecho y empujar hacia arriba.'),
+('Press de Banca Inclinado con Barra', 'Pecho', 'fuerza', 'En un banco inclinado, bajar la barra a la parte superior del pecho y empujar.'),
+('Press de Banca Declinado con Barra', 'Pecho', 'fuerza', 'En un banco declinado, bajar la barra a la parte inferior del pecho.'),
+('Press de Banca con Mancuernas', 'Pecho', 'fuerza', 'Acostado en un banco plano, bajar las mancuernas a los lados del pecho.'),
+('Press Inclinado con Mancuernas', 'Pecho', 'fuerza', 'En un banco inclinado, bajar las mancuernas a los lados del pecho.'),
+('Aperturas con Mancuernas', 'Pecho', 'fuerza', 'Acostado en un banco plano, abrir y cerrar los brazos con una ligera flexión de codo.'),
+('Aperturas en Cable (Cruce de Poleas)', 'Pecho', 'fuerza', 'De pie, cruzar las poleas por delante del pecho contrayendo los pectorales.'),
+('Fondos en Paralelas (Dips)', 'Pecho', 'calistenia', 'Suspender el cuerpo en barras paralelas y bajar flexionando los codos.(Enfocado a pecho inclinándose).'),
+('Flexiones (Push-ups)', 'Pecho', 'calistenia', 'Tumbado boca abajo, empujar el suelo para levantar el cuerpo.'),
+('Pullover con Mancuerna', 'Pecho', 'fuerza', 'Acostado transversalmente en un banco, bajar una mancuerna por detrás de la cabeza.'),
+
+-- ESPALDA
+('Dominadas (Pull-ups)', 'Espalda', 'calistenia', 'Colgado de una barra, subir el cuerpo hasta que la barbilla la supere (agarre prono).'),
+('Dominadas Agarre Neutro/Supino (Chin-ups)', 'Espalda', 'calistenia', 'Colgado de una barra, subir el cuerpo (agarre neutro o supino, enfoca más bíceps).'),
+('Jalón al Pecho (Lat Pulldown)', 'Espalda', 'fuerza', 'Sentado, tirar de una barra hacia la parte superior del pecho, simulando una dominada.'),
+('Remo con Barra (Barbell Row)', 'Espalda', 'fuerza', 'Inclinado con espalda recta, tirar de la barra hacia el abdomen.'),
+('Remo con Mancuerna (Dumbbell Row)', 'Espalda', 'fuerza', 'Apoyado en un banco, remar con una mancuerna con un solo brazo.'),
+('Remo en Punta (T-Bar Row)', 'Espalda', 'fuerza', 'Usando una barra T, tirar del peso hacia el pecho.'),
+('Remo Sentado en Máquina (Gironda)', 'Espalda', 'fuerza', 'Sentado con las piernas apoyadas, tirar de un agarre (V o ancho) hacia el abdomen.'),
+('Peso Muerto (Deadlift)', 'Espalda', 'fuerza', 'Levantar la barra del suelo hasta estar erguido, con la espalda recta. (Implica pierna y espalda).'),
+('Hiperextensiones (Back Extensions)', 'Lumbar', 'calistenia', 'En un banco de hiperextensiones, flexionar y extender la cadera.'),
+
+-- PIERNA
+('Sentadilla con Barra (Squat)', 'Pierna', 'fuerza', 'Con la barra en la espalda, bajar la cadera por debajo de las rodillas y subir.'),
+('Sentadilla Frontal (Front Squat)', 'Pierna', 'fuerza', 'Con la barra en los hombros (delante), bajar la cadera. Enfoca más cuádriceps.'),
+('Prensa de Piernas (Leg Press)', 'Pierna', 'fuerza', 'Sentado en la máquina, empujar la plataforma con las piernas.'),
+('Zancadas (Lunges) con Mancuerna', 'Pierna', 'fuerza', 'Dar un paso adelante y flexionar ambas rodillas a 90 grados.'),
+('Sentadilla Búlgara', 'Pierna', 'fuerza', 'Con un pie elevado detrás, hacer una sentadilla con la pierna delantera.'),
+('Extensión de Cuádriceps (Quad Extension)', 'Pierna', 'fuerza', 'Sentado, extender las piernas contra la resistencia de la máquina.'),
+('Curl Femoral Tumbado', 'Femoral', 'fuerza', 'Tumbado boca abajo, flexionar las rodillas para llevar los talones al glúteo.'),
+('Curl Femoral Sentado', 'Femoral', 'fuerza', 'Sentado, flexionar las rodillas contra la resistencia.'),
+('Peso Muerto Rumano (RDL)', 'Femoral', 'fuerza', 'Bajar la barra con las piernas casi rectas, enfocando el estiramiento del femoral.'),
+('Hip Thrust', 'Glúteo', 'fuerza', 'Con la espalda apoyada en un banco, levantar la cadera con una barra.'),
+('Patada de Glúteo en Polea', 'Glúteo', 'fuerza', 'Dar una patada hacia atrás con una polea atada al tobillo.'),
+('Elevación de Gemelos de Pie', 'Gemelo', 'fuerza', 'Ponerse de puntillas contra una resistencia (máquina o peso).'),
+('Elevación de Gemelos Sentado', 'Gemelo', 'fuerza', 'Sentado, ponerse de puntillas contra la resistencia.'),
+
+-- HOMBRO
+('Press Militar con Barra (Overhead Press)', 'Hombro', 'fuerza', 'De pie o sentado, empujar la barra desde los hombros por encima de la cabeza.'),
+('Press Militar con Mancuernas', 'Hombro', 'fuerza', 'Sentado, empujar las mancuernas desde los hombros por encima de la cabeza.'),
+('Press Arnold', 'Hombro', 'fuerza', 'Un press con mancuernas que incluye una rotación de muñeca.'),
+('Elevaciones Laterales con Mancuerna', 'Hombro', 'fuerza', 'Levantar mancuernas hacia los lados hasta la altura de los hombros.'),
+('Elevaciones Laterales en Polea', 'Hombro', 'fuerza', 'Usando una polea baja, elevar el brazo lateralmente.'),
+('Elevaciones Frontales (Front Raises)', 'Hombro', 'fuerza', 'Levantar mancuernas o un disco hacia el frente.'),
+('Pájaros (Reverse Flyes)', 'Hombro', 'fuerza', 'Inclinado, abrir los brazos para trabajar la parte posterior del hombro.'),
+('Encogimientos (Shrugs) con Barra', 'Trapecio', 'fuerza', 'Encoger los hombros hacia las orejas sosteniendo una barra pesada.'),
+
+-- BÍCEPS
+('Curl de Bíceps con Barra', 'Bíceps', 'fuerza', 'De pie, flexionar los codos para levantar la barra.'),
+('Curl de Bíceps con Mancuernas (Alterno)', 'Bíceps', 'fuerza', 'De pie o sentado, flexionar los codos alternando los brazos.'),
+('Curl Martillo (Hammer Curl)', 'Bíceps', 'fuerza', 'Curl con agarre neutro (palmas enfrentadas), trabaja más el braquial.'),
+('Curl Predicador (Scott Curl)', 'Bíceps', 'fuerza', 'Apoyando el brazo en un banco Scott, flexionar el codo.'),
+('Curl de Concentración', 'Bíceps', 'fuerza', 'Sentado, apoyar el codo en el muslo y flexionar.'),
+
+-- TRÍCEPS
+('Fondos de Tríceps (en banco)', 'Tríceps', 'calistenia', 'De espaldas a un banco, bajar y subir el cuerpo con las manos apoyadas.'),
+('Press Francés (Skullcrushers)', 'Tríceps', 'fuerza', 'Acostado, bajar una barra Z o mancuernas hacia la frente y extender.'),
+('Extensión de Tríceps en Polea (Cuerda)', 'Tríceps', 'fuerza', 'En una polea alta, extender los codos hacia abajo usando una cuerda.'),
+('Extensión de Tríceps en Polea (Barra V)', 'Tríceps', 'fuerza', 'En una polea alta, extender los codos hacia abajo usando una barra V.'),
+('Patada de Tríceps (Tricep Kickback)', 'Tríceps', 'fuerza', 'Inclinado, extender el codo hacia atrás con una mancuerna.'),
+
+-- ABDOMEN
+('Crunch Abdominal', 'Abdomen', 'calistenia', 'Acostado, contraer el abdomen para levantar los hombros del suelo.'),
+('Plancha (Plank)', 'Abdomen', 'calistenia', 'Mantener una posición recta apoyado en antebrazos y pies.'),
+('Elevación de Piernas Colgado', 'Abdomen', 'calistenia', 'Colgado de una barra, levantar las piernas (rectas o flexionadas).'),
+('Rueda Abdominal (Ab Wheel)', 'Abdomen', 'calistenia', 'Arrodillado, deslizar una rueda hacia adelante y volver.'),
+('Russian Twist', 'Abdomen', 'calistenia', 'Sentado en V, girar el torso de un lado a otro (con o sin peso).'),
+
+-- CARDIO
+('Cinta - Correr', 'Cardio', 'cardio', 'Correr a una velocidad constante o en intervalos en la cinta.'),
+('Cinta - Caminar Inclinado', 'Cardio', 'cardio', 'Caminar a buen ritmo en la cinta con una inclinación elevada.'),
+('Bicicleta Estática', 'Cardio', 'cardio', 'Pedalear en una bicicleta estática, ajustando resistencia y velocidad.'),
+('Elíptica', 'Cardio', 'cardio', 'Simular un movimiento de carrera/esquí en la máquina elíptica.'),
+('Máquina de Remo (Rowing)', 'Cardio', 'cardio', 'Simular el movimiento de remo, trabajando todo el cuerpo.'),
+('Saltar a la Cuerda (Comba)', 'Cardio', 'cardio', 'Saltar a la comba a diferentes ritmos.');
+
+-- 10. Tabla Amistades (Modelo de Amistad Instantánea)
+CREATE TABLE `amistades` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `usuario_id` int(11) NOT NULL,    -- El "dueño" de esta fila
+  `amigo_id` int(11) NOT NULL,      -- El usuario que ES su amigo
+  `solicitante_id` int(11) NOT NULL, -- Quién INICIÓ la amistad (ID de A o B)
+  `fecha_amistad` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  
+  -- Claves Foráneas
+  CONSTRAINT `fk_amistad_usuario` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_amistad_amigo` FOREIGN KEY (`amigo_id`) REFERENCES `usuarios` 
+(`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_amistad_solicitante` FOREIGN KEY (`solicitante_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE,
+  
+  -- La clave para que no puedas ser amigo de alguien dos veces
+  UNIQUE KEY `idx_amistad_unica` (`usuario_id`, `amigo_id`)
+) ENGINE=InnoDB;

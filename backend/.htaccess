@@ -1,0 +1,8 @@
+# Activa el motor de reescritura de Apache
+RewriteEngine On
+
+# Esta es la regla mágica:
+# Captura la cabecera 'Authorization' que viene en la petición
+# y la pasa explícitamente a PHP para que $_SERVER la pueda leer.
+RewriteCond %{HTTP:Authorization} .
+RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
