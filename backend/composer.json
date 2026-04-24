@@ -1,0 +1,12 @@
+{
+    "name": "pablo/backend",
+    "require": {
+        "firebase/php-jwt": "^6.11"
+    },
+    "authors": [
+        {
+            "name": "pablomise004",
+            "email": "pablomise004@gmail.com"
+        }
+    ]
+}

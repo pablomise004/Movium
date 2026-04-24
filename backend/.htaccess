@@ -1,0 +1,11 @@
+# Activa el motor de reescritura de Apache
+RewriteEngine On
+
+# Reenvia Authorization a PHP para que este disponible en $_SERVER['HTTP_AUTHORIZATION']
+SetEnvIfNoCase Authorization "^(.*)$" HTTP_AUTHORIZATION=$1
+
+# Esta es la regla mágica:
+# Captura la cabecera 'Authorization' que viene en la petición
+# y la pasa explícitamente a PHP para que $_SERVER la pueda leer.
+RewriteCond %{HTTP:Authorization} .
+RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
