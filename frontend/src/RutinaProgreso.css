@@ -1,0 +1,262 @@
+/* ---- frontend/src/RutinaProgreso.css (Reescrito con ajuste móvil para gráfica) ---- */
+
+.progreso-container {
+  padding: 2rem;
+  animation: fadeIn 0.5s ease-in-out;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.progreso-container h2 {
+  font-size: 2rem;
+  color: var(--text-color);
+  margin-bottom: 0.5rem;
+}
+
+.progreso-container .subtitle {
+  font-size: 1.1rem;
+  color: var(--text-secondary-color);
+  margin-bottom: 2rem;
+}
+
+.btn-volver {
+  background: none;
+  border: 1px solid var(--input-border-color);
+  color: var(--text-secondary-color);
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-family: var(--font-family);
+  transition: all 0.3s ease;
+  margin-bottom: 1.5rem;
+}
+
+.btn-volver:hover {
+  background-color: var(--input-bg-color);
+  color: var(--text-color);
+}
+
+/* --- Contenedor de la Gráfica (Con aspect-ratio CSS) --- */
+.chart-container-progreso {
+  background-color: var(--surface-color);
+  border: 1px solid var(--input-border-color);
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: var(--box-shadow);
+  margin-bottom: 2.5rem;
+  position: relative;
+  width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+
+  /* Proporción por defecto para escritorio (ancha) */
+  aspect-ratio: 2 / 1;
+}
+
+/* Regla para el canvas */
+.chart-container-progreso canvas {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  /* El canvas debería ajustarse automáticamente al contenedor con aspect-ratio */
+}
+
+/* --- Historial de Sesiones (Sin cambios respecto a tu última versión) --- */
+.historial-titulo {
+  color: var(--text-color);
+  border-bottom: 1px solid var(--input-border-color);
+  padding-bottom: 0.5rem;
+  margin-bottom: 1.5rem;
+  margin-top: 2.5rem;
+}
+
+.historial-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.sesion-card {
+  background-color: var(--surface-color);
+  border: 1px solid var(--input-border-color);
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: var(--box-shadow);
+}
+
+.sesion-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  padding-bottom: 1rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid var(--input-border-color);
+}
+
+.sesion-header strong {
+  font-size: 1.25rem;
+  color: var(--primary-color);
+  flex-shrink: 0;
+}
+
+.sesion-totales {
+  display: flex;
+  gap: 0.75rem;
+  font-size: 0.9rem;
+  color: var(--text-secondary-color);
+  flex-grow: 1;
+  justify-content: center;
+  flex-wrap: wrap;
+  padding: 0 0.5rem;
+}
+
+.sesion-totales span {
+  white-space: nowrap;
+}
+
+.sesion-nota {
+  font-size: 1.1rem;
+  color: var(--text-secondary-color);
+  cursor: help;
+  flex-shrink: 0;
+}
+
+.ejercicios-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.ejercicio-grupo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.ejercicio-grupo > strong {
+  font-size: 1.05rem;
+  color: var(--text-color);
+  font-weight: 700;
+}
+
+.ejercicio-grupo ul {
+  list-style: none;
+  padding-left: 1rem;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.serie-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  font-size: 0.95rem;
+  color: var(--text-secondary-color);
+  align-items: baseline;
+}
+
+.serie-item span:first-child {
+  color: var(--text-color);
+  white-space: nowrap;
+  flex-shrink: 0;
+  min-width: 40px;
+}
+
+.serie-item span:nth-child(2) {
+  text-align: right;
+  flex-grow: 1;
+}
+
+.serie-nota-historial {
+  color: var(--text-secondary-color);
+  font-size: 0.85rem;
+  cursor: help;
+  margin-left: 0.5rem;
+  flex-shrink: 0;
+}
+
+.fallo-tag {
+  background-color: var(--primary-color);
+  color: #fff;
+  font-size: 0.7rem;
+  padding: 0.1rem 0.3rem;
+  border-radius: 4px;
+  font-weight: bold;
+  margin-left: 0.4rem;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+/* --- Mensaje Sin Datos (sin cambios) --- */
+.no-data-msg {
+  text-align: center;
+  color: var(--text-secondary-color);
+  font-style: italic;
+  padding: 2rem;
+  background-color: var(--surface-color);
+  border: 1px dashed var(--input-border-color);
+  border-radius: 12px;
+}
+
+/* --- Botón Cargar Más (sin cambios) --- */
+.btn-cargar-mas {
+  display: block;
+  margin: 2rem auto 0;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-secondary-color);
+  background-color: var(--input-bg-color);
+  border: 1px solid var(--input-border-color);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: var(--font-family);
+}
+
+.btn-cargar-mas:hover:not(:disabled) {
+  background-color: var(--input-border-color);
+  color: var(--text-color);
+}
+
+.btn-cargar-mas:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* --- Media Query para Móviles (MODIFICADO) --- */
+@media (max-width: 600px) {
+  .progreso-container {
+    padding: 1.5rem;
+  }
+
+  /* Ajustar proporción en móvil para MÁS ALTURA */
+  .chart-container-progreso {
+     padding: 1rem;
+     /* Mantenemos 1/1, parece una buena proporción para móvil */
+     aspect-ratio: 1 / 1;
+     /* Ya no necesitamos min-height aquí */
+  }
+
+  /* Ajustes para el historial en móvil (sin cambios) */
+  .sesion-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .sesion-totales {
+    justify-content: flex-start;
+    padding: 0;
+    margin-top: 0.25rem;
+  }
+  .serie-item {
+    flex-wrap: wrap;
+  }
+  .serie-item span:nth-child(2) {
+    text-align: left;
+  }
+}

@@ -1,0 +1,517 @@
+/* ---- frontend/src/RutinaDetalle.css (LIMPIO Y CORREGIDO) ---- */
+
+/* Estilos generales .rutina-detalle-container, .btn-volver */
+.rutina-detalle-container {
+  padding: 2rem;
+  animation: fadeIn 0.5s ease-in-out;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.rutina-detalle-container h2 {
+  font-size: 2rem;
+  color: var(--text-color);
+  margin-bottom: 0.5rem;
+}
+.rutina-detalle-container .subtitle {
+  font-size: 1.1rem;
+  color: var(--text-secondary-color);
+  margin-bottom: 2rem;
+}
+.btn-volver {
+  background: none;
+  border: 1px solid var(--input-border-color);
+  color: var(--text-secondary-color);
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-family: var(--font-family);
+  transition: all 0.3s ease;
+  margin-bottom: 1rem;
+}
+.btn-volver:hover {
+  background-color: var(--input-bg-color);
+  color: var(--text-color);
+}
+
+/* Contenedor de la cabecera (Modo Vista) */
+.rutina-header-view {
+  position: relative;
+  padding-right: 50px; /* Deja espacio para el botón de lápiz */
+  margin-bottom: 1rem; /* Separación antes del siguiente form */
+}
+
+/* Botón de Lápiz para Editar Info */
+.btn-edit-info {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: none;
+  border: none;
+  color: var(--text-secondary-color);
+  font-size: 1.5rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+.btn-edit-info:hover {
+  background-color: var(--input-bg-color);
+  color: var(--primary-color);
+}
+
+/* Formulario de Edición INLINE */
+.form-editar-rutina-inline {
+  background-color: var(--surface-color);
+  border: 1px solid var(--input-border-color);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  box-shadow: var(--box-shadow);
+}
+.form-editar-rutina-inline h3 {
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  color: var(--text-color);
+}
+
+/* Mensaje de éxito (verde/azul) */
+.message.success {
+  background-color: rgba(26, 115, 232, 0.1);
+  color: #8ab4f8; /* Un azul claro */
+  border: 1px solid #8ab4f8;
+  margin-bottom: 1rem;
+}
+
+/* Acciones del formulario inline */
+.form-actions-rutina-inline {
+  display: flex;
+  justify-content: space-between;
+  align-items: center; /* Asegura alineación vertical */
+  gap: 1rem;
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--input-border-color);
+}
+.form-actions-rutina-inline-right {
+  display: flex;
+  align-items: center; /* Asegura alineación vertical */
+  gap: 1rem;
+}
+
+/* Botón de Borrar inline */
+.btn-delete-rutina-inline {
+  height: 40px;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: var(--font-family);
+  border: none;
+  padding: 0 1.5rem;
+  background-color: rgba(217, 48, 37, 0.1);
+  color: #d93025;
+  border: 2px solid #d93025;
+}
+.btn-delete-rutina-inline:hover {
+  background-color: #d93025;
+  color: #fff;
+}
+
+/* Botón Cancelar inline (gris) */
+.btn-cancel-inline {
+  height: 48px; /* ¡¡CAMBIO!! Era 40px, ahora 48px para alinear */
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: var(--font-family);
+  border: none;
+  padding: 0 1.5rem;
+  background-color: var(--input-bg-color);
+  color: var(--text-secondary-color);
+}
+.btn-cancel-inline:hover {
+  background-color: var(--input-border-color);
+  color: var(--text-color);
+}
+
+/* Botón Guardar inline (transparente) */
+.transparent-btn-inline {
+  height: 40px;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: var(--font-family);
+  padding: 0 1.5rem;
+  background: transparent;
+  color: var(--text-color);
+  border: 4px solid transparent;
+  background-image: linear-gradient(var(--surface-color), var(--surface-color)),
+    var(--gradient);
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
+}
+.transparent-btn-inline:hover {
+  transform: scale(1.03);
+}
+
+/* Formulario de Agregar Ejercicio */
+.form-agregar-ejercicio {
+  background-color: var(--surface-color);
+  border: 1px solid var(--input-border-color);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  box-shadow: var(--box-shadow);
+}
+.form-agregar-ejercicio h3 {
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+}
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 1rem;
+  align-items: flex-start;
+}
+.form-group-select,
+.form-group-small {
+  display: flex;
+  flex-direction: column;
+}
+.form-group-select {
+  grid-column: span 2;
+}
+.form-group-select label,
+.form-group-small label {
+  display: block;
+  font-weight: 700;
+  color: var(--text-secondary-color);
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+}
+
+/* --- ¡NUEVO! Contenedor para Input de Color + Botón "Quitar" --- */
+.color-input-container {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+/* Estilo específico para el input[type="color"] dentro de este layout */
+.color-input-container input[type="color"] {
+  flex-grow: 1; /* Permite que crezca para llenar el espacio */
+  height: 48px;
+  padding: 0.3rem; /* Padding pequeño para el color picker */
+  min-width: 80px; /* ¡CLAVE! Evita que colapse en móvil */
+  box-sizing: border-box; /* Asegura que padding esté incluido en la altura */
+}
+
+/* Estilo específico para el botón "Quitar" dentro de este layout */
+.color-input-container .btn-cancel-inline {
+  flex-shrink: 0; /* Evita que el botón se encoja */
+  /* La altura de 48px ya la hemos corregido arriba */
+}
+/* --- FIN NUEVO --- */
+
+.form-group-select select,
+.form-group-small input,
+.form-group-small select {
+  width: 100%;
+  height: 48px;
+  padding: 0 0.8rem;
+  font-size: 1rem;
+  font-family: var(--font-family);
+  color: var(--text-color);
+  background-color: var(--input-bg-color);
+  border: 1px solid var(--input-border-color);
+  border-radius: 8px;
+  box-sizing: border-box;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+.form-group-select select:focus,
+.form-group-small input:focus,
+.form-group-small select:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(0, 170, 255, 0.2);
+}
+.input-disabled {
+  background-color: var(--input-border-color);
+  color: var(--text-secondary-color);
+  cursor: not-allowed;
+}
+.select-ejercicio-btn {
+  width: 100%;
+  height: 48px;
+  padding: 0 0.8rem;
+  font-size: 1rem;
+  font-family: var(--font-family);
+  color: var(--text-color);
+  background-color: var(--input-bg-color);
+  border: 1px solid var(--input-border-color);
+  border-radius: 8px;
+  box-sizing: border-box;
+  transition: border-color 0.3s, box-shadow 0.3s;
+  text-align: left;
+  cursor: pointer;
+  color: var(--text-secondary-color);
+}
+.select-ejercicio-btn:hover {
+  border-color: var(--primary-color);
+}
+.form-rep-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 0.5rem;
+  align-items: flex-start;
+}
+.lista-series-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  max-height: 180px;
+  overflow-y: auto;
+  padding: 0;
+  background-color: transparent;
+  border-radius: 0;
+  border: none;
+}
+.serie-preview-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.95rem;
+  padding: 0.75rem 0.5rem;
+  background-color: transparent;
+  border-radius: 0;
+  border-bottom: 1px solid var(--input-border-color);
+}
+.serie-preview-item:last-child {
+  border-bottom: none;
+}
+.serie-preview-item span {
+  color: var(--text-color);
+}
+.serie-preview-item span strong {
+  color: var(--text-color);
+}
+.form-actions-right {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  grid-column: 1 / -1;
+}
+.form-actions-right .btn-add-serie {
+  background: var(--gradient);
+  color: #fff;
+  height: 48px;
+  border-radius: 999px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: var(--font-family);
+  border: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: auto;
+  flex-shrink: 0;
+  padding-left: 1.8rem;
+  padding-right: 1.8rem;
+}
+.btn-add-serie:hover {
+  transform: scale(1.03);
+  opacity: 0.9;
+}
+
+.form-actions-right .transparent-btn {
+  height: 48px;
+  font-size: 1rem;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: auto;
+  flex-shrink: 0;
+  padding-left: 1.8rem;
+  padding-right: 1.8rem;
+}
+
+/* Lista de Ejercicios */
+.lista-ejercicios h3 {
+  border-bottom: 1px solid var(--input-border-color);
+  padding-bottom: 0.5rem;
+  margin-top: 2.5rem; /* Separación del form de arriba */
+}
+.table-container {
+  overflow-x: auto;
+}
+.lista-ejercicios table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+.lista-ejercicios th,
+.lista-ejercicios td {
+  padding: 0.8rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid var(--input-border-color);
+  vertical-align: middle;
+}
+.lista-ejercicios th {
+  color: var(--text-secondary-color);
+  font-size: 0.9rem;
+  text-transform: uppercase;
+}
+.lista-ejercicios td {
+  color: var(--text-color);
+  font-size: 1rem;
+}
+.lista-ejercicios tr:last-child td {
+  border-bottom: none;
+}
+.cell-objetivos ul {
+  margin: 0;
+  padding-left: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+.cell-objetivos li {
+  font-size: 0.9rem;
+  color: var(--text-secondary-color);
+}
+.cell-objetivos li strong {
+  color: var(--text-color);
+}
+.cell-objetivos li span {
+  white-space: nowrap;
+}
+.acciones-tabla {
+  display: flex;
+  gap: 0.5rem;
+}
+.btn-edit-small,
+.btn-delete-small {
+  padding: 0.3rem 0.6rem;
+  font-size: 0.8rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: var(--font-family);
+  font-weight: 700;
+  border: none;
+  transition: all 0.2s ease;
+}
+.btn-edit-small {
+  background-color: var(--input-bg-color);
+  color: var(--text-secondary-color);
+}
+.btn-edit-small:hover {
+  background-color: var(--input-border-color);
+  color: var(--text-color);
+}
+.btn-delete-small {
+  background-color: rgba(217, 48, 37, 0.1);
+  color: #d93025;
+}
+.btn-delete-small:hover {
+  background-color: #d93025;
+  color: #fff;
+}
+
+/* Scrollbar para Modales */
+.modal-list {
+  scrollbar-width: thin;
+  scrollbar-color: var(--input-border-color) var(--input-bg-color);
+}
+.modal-list::-webkit-scrollbar {
+  width: 10px;
+}
+.modal-list::-webkit-scrollbar-track {
+  background: var(--input-bg-color);
+  border-radius: 5px;
+}
+.modal-list::-webkit-scrollbar-thumb {
+  background-color: var(--input-border-color);
+  border-radius: 5px;
+  border: 2px solid var(--input-bg-color);
+}
+.modal-list::-webkit-scrollbar-thumb:hover {
+  background-color: var(--text-secondary-color);
+}
+
+/* --- NUEVO: Contador de Caracteres --- */
+.char-counter {
+  display: block; /* Para que ocupe su propia línea */
+  text-align: right; /* Alinea a la derecha */
+  font-size: 0.8rem; /* Pequeño */
+  color: var(--text-secondary-color); /* Color sutil */
+  padding-right: 0.2rem; /* Ligero padding */
+}
+
+/* Media Queries */
+@media (max-width: 600px) {
+  /* Ajuste para el header inline */
+  .rutina-header-view {
+    padding-right: 45px;
+  }
+  .btn-edit-info {
+    width: 36px;
+    height: 36px;
+    font-size: 1.3rem;
+  }
+  .form-actions-rutina-inline {
+    flex-direction: column;
+    align-items: stretch; /* Ocupa todo el ancho */
+    gap: 0.75rem; /* Menos espacio */
+  }
+  .form-actions-rutina-inline-right {
+    flex-direction: column;
+    gap: 0.75rem; /* Menos espacio */
+  }
+
+  /* ESTA REGLA ES AHORA MÁS ESPECÍFICA */
+  .form-actions-rutina-inline .btn-delete-rutina-inline,
+  .form-actions-rutina-inline .btn-cancel-inline,
+  .form-actions-rutina-inline .transparent-btn-inline {
+    width: 100%; /* Botones ocupan todo el ancho */
+  }
+
+  /* Estilos antiguos de media query */
+  .modal-filters {
+    flex-direction: column;
+  }
+  .form-actions-right {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .form-actions-right .btn-add-serie,
+  .form-actions-right .transparent-btn {
+    width: 100%;
+    max-width: none;
+    flex-shrink: 1;
+  }
+  .form-rep-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .form-rep-grid .form-group-small:first-child {
+    grid-column: 1 / -1;
+  }
+
+  /* ESTA REGLA APILA EL FORMULARIO DE EDICIÓN */
+  .form-editar-rutina-inline .form-grid {
+    grid-template-columns: 1fr; /* Apila todo en una sola columna */
+  }
+}
