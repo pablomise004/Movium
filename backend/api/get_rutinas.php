@@ -1,31 +1,39 @@
 <?php
-// ---- backend/api/get_rutinas.php (Modificado para 'orden' y 'color_tag') ----
+// Obtener rutinas del usuario
 
-// ... (Cabeceras CORS) ...
+// Cabeceras para peticiones desde el frontend
 header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json; charset=UTF-8");
-header("Access-Control-Allow-Methods: GET");
+header("Access-Control-Allow-Methods: GET, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
 
-require_once '../config/database.php';
+// Antes de mandar el GET real el navegador manda un OPTIONS para ver si puede.
+// Si no respondemos aqui con 200 falla el CORS y no carga nada.
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit();
+}
+
+require_once '../config/base_de_datos.php';
 require_once '../vendor/autoload.php';
+require_once '../config/configuracion_jwt.php';
 
 use \Firebase\JWT\JWT;
 use \Firebase\JWT\Key;
 
-// ... (Validación de Token sin cambios) ...
-$secret_key = "k#f9JLz@p7W!bN8^vG2*qR5sT&eD4hX%uY1aC6oP3zM0xQñ";
-$jwt = null;
-$authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? null;
-$usuario_id = null;
-if ($authHeader) {
-    $arr = explode(" ", $authHeader);
-    $jwt = $arr[1] ?? null;
+// Validar token y extraer usuario
+$clave_secreta = JWT_SECRET;
+$token = null;
+$cabecera = $_SERVER['HTTP_AUTHORIZATION'] ?? null;
+$id_usuario = null;
+if ($cabecera) {
+    $partes = explode(" ", $cabecera);
+    $token = $partes[1] ?? null;
 }
-if ($jwt) {
+if ($token) {
     try {
-        $decoded = JWT::decode($jwt, new Key($secret_key, 'HS256'));
-        $usuario_id = $decoded->data->id;
+        $decodificado = JWT::decode($token, new Key($clave_secreta, 'HS256'));
+        $id_usuario = $decodificado->data->id;
     } catch (Exception $e) {
         http_response_code(401);
         echo json_encode(array("mensaje" => "Acceso denegado. Token inválido."));
@@ -38,88 +46,34 @@ if ($jwt) {
 }
 
 try {
-    $database = new Database();
-    $db = $database->getConnection();
+    $bd = new Database();
+    $conexion = $bd->getConnection();
 
-        // Intento 1: esquema nuevo con orden/color_tag.
-        // Si no existen esas columnas, hacemos fallback al esquema antiguo.
-        try {
-                $query = "SELECT
-                                        r.id,
-                                        r.nombre,
-                                        r.dias_semana,
-                                        r.orden,
-                                        r.color_tag,
-                                        MAX(s.fecha_inicio) as ultima_sesion
-                                 FROM
-                                        rutinas r
-                                    LEFT JOIN
-                                        sesiones_entrenamiento s ON r.id = s.rutina_id AND s.usuario_id = :usuario_id_sesion
-                                    WHERE
-                                        r.usuario_id = :usuario_id_rutina
-                                    GROUP BY
-                                        r.id, r.nombre, r.dias_semana, r.orden, r.color_tag
-                                    ORDER BY
-                                        r.orden ASC, r.fecha_creacion DESC";
+     $consulta = "SELECT
+                            r.id,
+                            r.nombre,
+                            r.dias_semana as dias,
+                            MAX(s.fecha_inicio) as ultima_sesion
+                        FROM
+                            rutinas r
+                        LEFT JOIN
+                            sesiones_entrenamiento s ON r.id = s.rutina_id AND s.usuario_id = :usuario_id_sesion
+                        WHERE
+                            r.usuario_id = :usuario_id_rutina
+                        GROUP BY
+                            r.id, r.nombre, r.dias_semana
+                        ORDER BY
+                            r.fecha_creacion DESC";
 
-                $stmt = $db->prepare($query);
-                $stmt->bindParam(":usuario_id_rutina", $usuario_id, PDO::PARAM_INT);
-                $stmt->bindParam(":usuario_id_sesion", $usuario_id, PDO::PARAM_INT);
-                $stmt->execute();
-        } catch (PDOException $e) {
-                if (($e->errorInfo[1] ?? null) != 1054) {
-                        throw $e;
-                }
+     $sentencia = $conexion->prepare($consulta);
+     $sentencia->bindParam(":usuario_id_rutina", $id_usuario, PDO::PARAM_INT);
+     $sentencia->bindParam(":usuario_id_sesion", $id_usuario, PDO::PARAM_INT);
+     $sentencia->execute();
 
-                $query = "SELECT
-                                        r.id,
-                                        r.nombre,
-                                        r.dias_semana,
-                                        NULL as orden,
-                                        NULL as color_tag,
-                                        MAX(s.fecha_inicio) as ultima_sesion
-                                 FROM
-                                        rutinas r
-                                    LEFT JOIN
-                                        sesiones_entrenamiento s ON r.id = s.rutina_id AND s.usuario_id = :usuario_id_sesion
-                                    WHERE
-                                        r.usuario_id = :usuario_id_rutina
-                                    GROUP BY
-                                        r.id, r.nombre, r.dias_semana
-                                    ORDER BY
-                                        r.fecha_creacion DESC";
+    $filas = $sentencia->fetchAll(PDO::FETCH_ASSOC);
 
-                $stmt = $db->prepare($query);
-                $stmt->bindParam(":usuario_id_rutina", $usuario_id, PDO::PARAM_INT);
-                $stmt->bindParam(":usuario_id_sesion", $usuario_id, PDO::PARAM_INT);
-                $stmt->execute();
-        }
-
-    $num = $stmt->rowCount();
-    if ($num > 0) {
-        $rutinas_array = array();
-        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-        foreach ($rows as $row) {
-            extract($row);
-            $rutina_item = array(
-                "id" => $id,
-                "nombre" => $nombre,
-                "dias" => $dias_semana,
-                "ultima_sesion" => $ultima_sesion,
-                "orden" => $orden,         // <-- ¡NUEVO!
-                "color_tag" => $color_tag   // <-- ¡NUEVO!
-            );
-            array_push($rutinas_array, $rutina_item);
-        }
-
-        http_response_code(200);
-        echo json_encode($rutinas_array);
-
-    } else {
-        http_response_code(200);
-        echo json_encode(array());
-    }
+    http_response_code(200);
+    echo json_encode($filas);
 
 } catch (Exception $e) {
     http_response_code(500);

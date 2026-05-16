@@ -1,47 +1,45 @@
-/* ---- frontend/src/Ayuda.css (ACTUALIZADO CON TAG DE GRUPO MUSCULAR) ---- */
-
-.ayuda-container {
+﻿.ayuda-container {
   padding: 2rem;
-  animation: fadeIn 0.5s ease-in-out; /* Reutilizamos la animación global */
-  max-width: 900px; /* Ajusta según necesites */
+  animation: fadeIn 0.5s ease-in-out;
+  max-width: 900px;
   margin: 0 auto;
 }
 
 .ayuda-container h2 {
   font-size: 2rem;
-  color: var(--text-color);
+  color: var(--color-texto);
   margin-bottom: 0.5rem;
   text-align: center;
 }
 
 .ayuda-container .subtitle {
   font-size: 1.1rem;
-  color: var(--text-secondary-color);
-  margin-bottom: 3rem; /* Más espacio después del subtítulo */
+  color: var(--color-texto-secundario);
+  margin-bottom: 3rem;
   text-align: center;
 }
 
 .ayuda-seccion {
-  background-color: var(--surface-color); /* Fondo ligeramente distinto */
-  border: 1px solid var(--input-border-color);
+  background-color: var(--color-superficie);
+  border: 1px solid var(--color-borde-input);
   border-radius: 12px;
-  padding: 1.5rem 2rem; /* Más padding horizontal */
-  margin-bottom: 2rem; /* Espacio entre secciones */
-  box-shadow: var(--box-shadow); /* Sombra suave */
+  padding: 1.5rem 2rem;
+  margin-bottom: 2rem;
+  box-shadow: var(--sombra);
 }
 
 .ayuda-seccion h3 {
   font-size: 1.5rem;
-  color: var(--primary-color); /* Títulos de sección destacados */
+  color: var(--color-principal);
   margin-top: 0;
   margin-bottom: 1rem;
   padding-bottom: 0.5rem;
-  border-bottom: 1px solid var(--input-border-color);
+  border-bottom: 1px solid var(--color-borde-input);
 }
 
-.ayuda-seccion h4 { /* Estilo para subtítulos dentro de sección */
+.ayuda-seccion h4 {
   font-size: 1.2rem;
-  color: var(--text-color);
+  color: var(--color-texto);
   margin-top: 1.5rem;
   margin-bottom: 0.8rem;
 }
@@ -49,114 +47,110 @@
 .ayuda-seccion p,
 .ayuda-seccion ul,
 .ayuda-seccion dl {
-  line-height: 1.7; /* Mayor interlineado para legibilidad */
-  color: var(--text-color);
+  line-height: 1.7;
+  color: var(--color-texto);
   margin-bottom: 1rem;
 }
 
 .ayuda-seccion ul {
-  padding-left: 1.5rem; /* Indentación estándar */
+  padding-left: 1.5rem;
 }
 
 .ayuda-seccion ul ul {
-  margin-top: 0.5rem; /* Espacio antes de sub-listas */
+  margin-top: 0.5rem;
   padding-left: 1rem;
 }
 
 .ayuda-seccion li {
-  margin-bottom: 0.5rem; /* Espacio entre ítems de lista */
+  margin-bottom: 0.5rem;
 }
 
 .ayuda-seccion strong,
-.ayuda-seccion b { /* Incluimos <b> */
+.ayuda-seccion b {
   font-weight: 700;
-  color: var(--text-color); /* Asegura que resalte un poco más */
+  color: var(--color-texto);
 }
 
-/* Estilos para la lista de definiciones <dl> (Conceptos) */
 .ayuda-seccion dl dt {
   font-weight: 700;
-  color: var(--text-color);
-  margin-top: 1rem; /* Espacio antes de cada término */
+  color: var(--color-texto);
+  margin-top: 1rem;
 }
 
 .ayuda-seccion dl dd {
-  margin-left: 1.5rem; /* Indentación de la definición */
-  color: var(--text-secondary-color);
+  margin-left: 1.5rem;
+  color: var(--color-texto-secundario);
   margin-bottom: 0.5rem;
 }
 
-/* Estilos para la lista de ejercicios y descripciones <dl> */
 .lista-ejercicios-descripcion dt {
   font-weight: 700;
-  color: var(--text-color);
-  margin-top: 1.2rem; /* Más espacio antes de cada ejercicio */
+  color: var(--color-texto);
+  margin-top: 1.2rem;
   font-size: 1.1rem;
-  display: flex; /* Para alinear el tag */
-  align-items: baseline; /* Alinea texto base */
-  flex-wrap: wrap; /* Permite que el tag baje si no cabe */
-  gap: 0.5rem; /* Espacio entre nombre y tag */
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.5rem;
 }
 
-/* --- NUEVO ESTILO PARA EL TAG DEL GRUPO MUSCULAR --- */
 .ejercicio-grupo-tag {
-  font-size: 0.8rem; /* Más pequeño */
-  font-weight: normal; /* No negrita */
-  color: var(--text-secondary-color);
-  background-color: var(--input-bg-color); /* Fondo sutil */
-  padding: 0.15rem 0.5rem; /* Padding pequeño */
-  border-radius: 6px; /* Bordes redondeados */
-  border: 1px solid var(--input-border-color); /* Borde sutil */
-  white-space: nowrap; /* Evita que se parta */
-  display: inline-block; /* Para que el padding funcione bien */
+  font-size: 0.8rem;
+  font-weight: normal;
+  color: var(--color-texto-secundario);
+  background-color: var(--color-fondo-input);
+  padding: 0.15rem 0.5rem;
+  border-radius: 6px;
+  border: 1px solid var(--color-borde-input);
+  white-space: nowrap;
+  display: inline-block;
 }
-/* --- FIN NUEVO ESTILO --- */
 
 .lista-ejercicios-descripcion dd {
-  margin-left: 1.5rem; /* Indentación de la descripción */
-  color: var(--text-secondary-color);
+  margin-left: 1.5rem;
+  color: var(--color-texto-secundario);
   margin-bottom: 0.5rem;
-  padding-bottom: 1.2rem; /* Espacio después de cada descripción */
-  border-bottom: 1px dashed var(--input-border-color); /* Separador suave */
+  padding-bottom: 1.2rem;
+  border-bottom: 1px dashed var(--color-borde-input);
 }
 
-/* Evita borde inferior en el último elemento */
 .lista-ejercicios-descripcion dd:last-of-type {
   border-bottom: none;
   padding-bottom: 0;
 }
 
-/* Estilo para las fórmulas (e1RM, Volumen) */
 .ayuda-seccion code {
-  background-color: var(--input-bg-color);
+  background-color: var(--color-fondo-input);
   padding: 0.2em 0.4em;
   margin: 0;
   font-size: 0.9em;
   border-radius: 3px;
   font-family: monospace;
-  color: var(--text-secondary-color);
-  display: inline-block; /* Para que el fondo ocupe solo el texto */
-  margin-top: 0.5rem; /* Separación de la línea anterior */
+  color: var(--color-texto-secundario);
+  display: inline-block;
+  margin-top: 0.5rem;
 }
 
-
-/* Animación */
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-/* --- NUEVO: Estilo para la etiqueta "F" en la Ayuda --- */
 .ayuda-fallo-tag {
-  display: inline-block; /* Necesario para aplicar padding y background */
-  background-color: var(--primary-color); /* El azul principal */
-  color: #fff; /* Texto blanco */
-  font-size: 0.8em; /* Un poco más pequeño que el texto normal */
-  padding: 0.1em 0.4em; /* Pequeño padding alrededor */
-  border-radius: 4px; /* Bordes redondeados */
-  font-weight: bold; /* Texto en negrita */
-  margin-right: 0.3em; /* Un pequeño espacio después de la F */
-  vertical-align: baseline; /* Para que se alinee bien con el texto */
-  line-height: 1; /* Evita que afecte mucho la altura de línea */
+  display: inline-block;
+  background-color: var(--color-principal);
+  color: #fff;
+  font-size: 0.8em;
+  padding: 0.1em 0.4em;
+  border-radius: 4px;
+  font-weight: bold;
+  margin-right: 0.3em;
+  vertical-align: baseline;
+  line-height: 1;
 }
-/* --- FIN NUEVO --- */

@@ -1,6 +1,4 @@
-/* Estilos de la pantalla de acceso */
-
-.page-container {
+﻿.page-container {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -13,11 +11,11 @@
   display: flex;
   width: 800px;
   max-width: 90%;
-  background-color: var(--surface-color);
+  background-color: var(--color-superficie);
   border-radius: 12px;
-  box-shadow: var(--box-shadow);
+  box-shadow: var(--sombra);
   overflow: hidden;
-  border: 1px solid var(--input-border-color);
+  border: 1px solid var(--color-borde-input);
   transition: background-color 0.3s, border-color 0.3s;
 }
 
@@ -35,7 +33,7 @@
 
 body.light .panel-izquierdo {
   background-color: #f8f9fa;
-  color: var(--text-color);
+  color: var(--color-texto);
 }
 
 .panel-izquierdo .icon {
@@ -51,7 +49,7 @@ body.light .panel-izquierdo {
 .panel-izquierdo p {
   font-size: 1.15rem;
   font-weight: 400;
-  color: var(--text-secondary-color);
+  color: var(--color-texto-secundario);
 }
 
 body.light .panel-izquierdo p {
@@ -70,7 +68,7 @@ h2 {
   margin-top: 0;
   margin-bottom: 1.5rem;
   font-weight: 700;
-  color: var(--text-color);
+  color: var(--color-texto);
   text-align: center;
 }
 
@@ -80,9 +78,9 @@ form {
 }
 
 input {
-  background-color: var(--input-bg-color);
-  color: var(--text-color);
-  border: 1px solid var(--input-border-color);
+  background-color: var(--color-fondo-input);
+  color: var(--color-texto);
+  border: 1px solid var(--color-borde-input);
   padding: 1rem;
   margin-bottom: 0;
   border-radius: 8px;
@@ -94,7 +92,7 @@ input {
 
 input:focus {
   outline: none;
-  border-color: var(--primary-color);
+  border-color: var(--color-principal);
 }
 
 .input-wrapper {
@@ -105,7 +103,7 @@ input:focus {
 
 .password-wrapper {
   position: relative;
-  display: flex; /* Mantenemos flex para alinear el input */
+  display: flex; 
   align-items: center;
   width: 100%;
   margin-bottom: 1rem;
@@ -115,7 +113,6 @@ input:focus {
   margin-bottom: 0; 
 }
 
-/* Botón mostrar/ocultar */
 .password-toggle {
   position: absolute;
   right: 1rem;
@@ -125,24 +122,24 @@ input:focus {
   user-select: none;
   font-size: 0.85rem;
   font-weight: 700;
-  color: var(--text-secondary-color);
+  color: var(--color-texto-secundario);
   transition: color 0.3s;
   z-index: 3;
 }
 
 .password-toggle:hover {
-  color: var(--text-color);
+  color: var(--color-texto);
 }
 
 .toggle-form {
   margin-top: 1.5rem;
-  color: var(--text-secondary-color);
+  color: var(--color-texto-secundario);
   font-size: 0.9rem;
   text-align: center;
 }
 
 .toggle-form span {
-  color: var(--primary-color);
+  color: var(--color-principal);
   font-weight: 700;
   cursor: pointer;
   transition: opacity 0.3s;
@@ -156,8 +153,8 @@ input:focus {
 
   .page-container {
     display: flex;
-    justify-content: center; /* Centra horizontalmente */
-    align-items: center;    /* Centra verticalmente */
+    justify-content: center; 
+    align-items: center;    
     min-height: 100vh;
     padding: 2rem;
     box-sizing: border-box;

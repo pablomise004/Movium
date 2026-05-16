@@ -1,19 +1,19 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import './Estadisticas.css';
 import iconoTrofeo from './assets/trofeo.png';
 import iconoEstrella from './assets/estrella.png';
-import { API_BASE_URL } from './config';
+import { API_BASE_URL } from './configuracion';
 
 const TabMisPRs = ({ token }) => {
-  const [prs, setPrs] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [registros, setRegistros] = useState([]);
+  const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
-  const [filtroNombre, setFiltroNombre] = useState('');
-  const [filtroGrupoPRs, setFiltroGrupoPRs] = useState('Todos');
+  const [filtroTexto, setFiltroTexto] = useState('');
+  const [filtroGrupo, setFiltroGrupo] = useState('Todos');
 
   useEffect(() => {
     const cargarMisPRs = async () => {
-      setLoading(true);
+      setCargando(true);
       setError(null);
       try {
         const res = await fetch(`${API_BASE_URL}get_mis_todos_prs.php`, {
@@ -21,11 +21,11 @@ const TabMisPRs = ({ token }) => {
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.mensaje || 'Error al cargar mis PRs.');
-        setPrs(data);
+        setRegistros(data);
       } catch (err) {
         setError(err.message);
       } finally {
-        setLoading(false);
+        setCargando(false);
       }
     };
 
@@ -33,26 +33,22 @@ const TabMisPRs = ({ token }) => {
       cargarMisPRs();
     } else {
       setError('Token no disponible.');
-      setLoading(false);
+      setCargando(false);
     }
   }, [token]);
 
-  const gruposMuscularesPRs = useMemo(() => {
-    const grupos = new Set(prs.map(pr => pr.grupo_muscular).filter(Boolean));
-    return ['Todos', ...Array.from(grupos).sort()];
-  }, [prs]);
+  const gruposMuscularesPRs = ['Todos'];
+  registros.forEach(pr => {
+    if (pr.grupo_muscular && gruposMuscularesPRs.indexOf(pr.grupo_muscular) === -1) {
+      gruposMuscularesPRs.push(pr.grupo_muscular);
+    }
+  });
 
-  const listaFiltrada = useMemo(() => {
-    return prs.filter(pr => {
-      const pasaFiltroGrupo = filtroGrupoPRs === 'Todos' || pr.grupo_muscular === filtroGrupoPRs;
-      const filtroLower = filtroNombre.toLowerCase();
-      const pasaFiltroNombre =
-        !filtroNombre ||
-        pr.nombre.toLowerCase().includes(filtroLower) ||
-        (pr.grupo_muscular && pr.grupo_muscular.toLowerCase().includes(filtroLower));
-      return pasaFiltroGrupo && pasaFiltroNombre;
-    });
-  }, [prs, filtroNombre, filtroGrupoPRs]);
+  const listaFiltrada = registros.filter(pr => {
+    if (filtroGrupo !== 'Todos' && pr.grupo_muscular !== filtroGrupo) return false;
+    if (filtroTexto && !pr.nombre.toLowerCase().includes(filtroTexto.toLowerCase())) return false;
+    return true;
+  });
 
   const renderPR = (pr) => {
     if (pr.tipo === 'cardio') {
@@ -103,13 +99,13 @@ const TabMisPRs = ({ token }) => {
           type="search"
           placeholder="Filtrar por nombre..."
           className="modal-search pr-search-input"
-          value={filtroNombre}
-          onChange={(e) => setFiltroNombre(e.target.value)}
+          value={filtroTexto}
+          onChange={(e) => setFiltroTexto(e.target.value)}
         />
         <select
           className="modal-group-select"
-          value={filtroGrupoPRs}
-          onChange={(e) => setFiltroGrupoPRs(e.target.value)}
+          value={filtroGrupo}
+          onChange={(e) => setFiltroGrupo(e.target.value)}
         >
           {gruposMuscularesPRs.map(grupo => (
             <option key={grupo} value={grupo}>
@@ -127,9 +123,9 @@ const TabMisPRs = ({ token }) => {
       </div>
 
       {error && <div className="message" style={{ marginBottom: '1.5rem' }}>{error}</div>}
-      {loading && <p className="subtitle" style={{ textAlign: 'center', marginTop: '2rem' }}>Cargando tus records...</p>}
+      {cargando && <p className="subtitle" style={{ textAlign: 'center', marginTop: '2rem' }}>Cargando tus records...</p>}
 
-      {!loading && !error && (
+      {!cargando && !error && (
         <div className="pr-list-container">
           {listaFiltrada.length > 0 ? (
             listaFiltrada.map(pr => (
@@ -143,7 +139,7 @@ const TabMisPRs = ({ token }) => {
             ))
           ) : (
             <p className="no-data-msg" style={{ border: 'none', padding: '2rem 0' }}>
-              {prs.length === 0 ? 'Aun no tienes PRs registrados.' : 'No se encontraron PRs con ese filtro.'}
+              {registros.length === 0 ? 'Aun no tienes PRs registrados.' : 'No se encontraron PRs con ese filtro.'}
             </p>
           )}
         </div>

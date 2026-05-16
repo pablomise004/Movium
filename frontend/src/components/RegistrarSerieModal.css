@@ -1,10 +1,4 @@
-/* ---- frontend/src/components/RegistrarSerieModal.css (COMPLETO V6.0 - Focus Fix) ---- */
-
-/* ====================================================== */
-/* 1. ESTILOS GENÉRICOS DE MODAL */
-/* ====================================================== */
-
-.modal-backdrop {
+﻿.modal-backdrop {
   position: fixed;
   top: 0;
   left: 0;
@@ -19,14 +13,14 @@
 }
 
 .modal-content {
-  background-color: var(--surface-color);
-  border: 1px solid var(--input-border-color);
+  background-color: var(--color-superficie);
+  border: 1px solid var(--color-borde-input);
   border-radius: 12px;
   width: 90%;
   max-width: 500px;
   height: auto;
   max-height: 90vh;
-  box-shadow: var(--box-shadow);
+  box-shadow: var(--sombra);
   display: flex;
   flex-direction: column;
   animation: slideIn 0.3s ease-out;
@@ -35,8 +29,14 @@
 
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 @keyframes slideIn {
-  from { transform: translateY(-30px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
+  from {
+    transform: translateY(-30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 .modal-header {
@@ -44,51 +44,67 @@
   justify-content: space-between;
   align-items: center;
   padding: 1rem 1.5rem;
-  border-bottom: 1px solid var(--input-border-color);
+  border-bottom: 1px solid var(--color-borde-input);
   flex-shrink: 0;
 }
 
-.modal-header h3 { margin: 0; font-size: 1.25rem; }
-.modal-close-btn { background: none; border: none; font-size: 2rem; color: var(--text-secondary-color); cursor: pointer; line-height: 1; padding: 0; }
-.modal-close-btn:hover { color: var(--text-color); }
-
-
-/* ====================================================== */
-/* 2. ESTILOS DEL FORMULARIO DE REGISTRO DE SERIE */
-/* ====================================================== */
+.modal-header h3 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+.modal-close-btn {
+  background: none;
+  border: none;
+  font-size: 2rem;
+  color: var(--color-texto-secundario);
+  cursor: pointer;
+  line-height: 1;
+  padding: 0;
+}
+.modal-close-btn:hover {
+  color: var(--color-texto);
+}
 
 .modal-form {
   padding: 1.5rem;
   overflow-y: auto;
   flex-grow: 1;
   scrollbar-width: thin;
-  scrollbar-color: var(--input-border-color) var(--input-bg-color);
+  scrollbar-color: var(--color-borde-input) var(--color-fondo-input);
 }
-.modal-form::-webkit-scrollbar { width: 8px; }
-.modal-form::-webkit-scrollbar-track { background: var(--input-bg-color); border-radius: 4px; }
-.modal-form::-webkit-scrollbar-thumb { background-color: var(--input-border-color); border-radius: 4px; border: 2px solid var(--input-bg-color); }
-.modal-form::-webkit-scrollbar-thumb:hover { background-color: var(--text-secondary-color); }
-
+.modal-form::-webkit-scrollbar {
+  width: 8px;
+}
+.modal-form::-webkit-scrollbar-track {
+  background: var(--color-fondo-input);
+  border-radius: 4px;
+}
+.modal-form::-webkit-scrollbar-thumb {
+  background-color: var(--color-borde-input);
+  border-radius: 4px;
+  border: 2px solid var(--color-fondo-input);
+}
+.modal-form::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-texto-secundario);
+}
 
 .objetivo-texto {
   font-size: 1rem;
   font-style: italic;
-  color: var(--text-secondary-color);
+  color: var(--color-texto-secundario);
   text-align: center;
   margin-top: 0;
   margin-bottom: 1.5rem;
   padding-bottom: 1.5rem;
-  border-bottom: 1px solid var(--input-border-color);
+  border-bottom: 1px solid var(--color-borde-input);
 }
 
-/* Grid para inputs principales */
 .form-grid-registro {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1rem;
 }
 
-/* Estilos genéricos para grupos de inputs */
 .form-group-small {
   display: flex;
   flex-direction: column;
@@ -96,12 +112,11 @@
 .form-group-small label {
   display: block;
   font-weight: 700;
-  color: var(--text-secondary-color);
+  color: var(--color-texto-secundario);
   margin-bottom: 0.5rem;
   font-size: 0.9rem;
 }
 
-/* Estilos para inputs, select y textarea */
 .form-group-small input[type="text"],
 .form-group-small input[type="number"],
 .form-group-small select,
@@ -110,10 +125,10 @@
   height: 48px;
   padding: 0 0.8rem;
   font-size: 1rem;
-  font-family: var(--font-family);
-  color: var(--text-color);
-  background-color: var(--input-bg-color);
-  border: 1px solid var(--input-border-color);
+  font-family: var(--fuente);
+  color: var(--color-texto);
+  background-color: var(--color-fondo-input);
+  border: 1px solid var(--color-borde-input);
   border-radius: 8px;
   box-sizing: border-box;
   transition: border-color 0.3s, box-shadow 0.3s;
@@ -123,8 +138,8 @@
 }
 
 .input-disabled {
-  background-color: var(--input-border-color);
-  color: var(--text-secondary-color);
+  background-color: var(--color-borde-input);
+  color: var(--color-texto-secundario);
   cursor: not-allowed;
 }
 
@@ -139,11 +154,10 @@
 .form-group-small select:focus,
 .form-group-small textarea:focus {
   outline: none;
-  border-color: var(--primary-color);
+  border-color: var(--color-principal);
   box-shadow: 0 0 0 3px rgba(0, 170, 255, 0.2);
 }
 
-/* --- ESTILO V6.0 PARA CHECKBOX (Focus Fix) --- */
 .form-group-checkbox {
   display: flex;
   align-items: center;
@@ -165,7 +179,7 @@
 .form-group-checkbox input[type="checkbox"] {
   width: 18px;
   height: 18px;
-  accent-color: var(--primary-color);
+  accent-color: var(--color-principal);
   cursor: pointer;
   margin: 0;
   flex-shrink: 0;
@@ -175,40 +189,35 @@
   background-color: transparent;
   appearance: checkbox;
 }
-/* QUITA EL OUTLINE AZUL/NEGRO POR DEFECTO */
+
 .form-group-checkbox input[type="checkbox"]:focus {
-    outline: none; /* Quita el recuadro feo */
+    outline: none; 
 }
-/* Estilo adicional para navegadores Webkit (Chrome, Safari) */
+
 .form-group-checkbox input[type="checkbox"]:focus-visible {
      outline: none;
      box-shadow: 0 0 0 2px rgba(0, 170, 255, 0.3);
 }
 
-
 .form-group-checkbox label {
   margin-bottom: 0;
   font-weight: normal;
-  color: var(--text-color);
+  color: var(--color-texto);
   font-size: 0.95rem;
   cursor: pointer;
   line-height: 1.2;
 }
-/* --- FIN ESTILO CHECKBOX --- */
 
-
-/* Footer del modal (centrado) */
 .modal-footer {
   display: flex;
   justify-content: center;
   gap: 1rem;
   padding: 1.5rem;
   margin-top: 1.5rem;
-  border-top: 1px solid var(--input-border-color);
+  border-top: 1px solid var(--color-borde-input);
   flex-shrink: 0;
 }
 
-/* Clase de error */
 .message {
   margin-bottom: 1rem;
   padding: 0.8rem;
@@ -220,35 +229,40 @@
   border: 1px solid #d93025;
 }
 
-/* ====================================================== */
-/* 3. ESTILOS PARA EL RESUMEN (EN RESUMENFINALMODAL) */
-/* ====================================================== */
-
-/* Contenedor con scroll */
 .resumen-container {
   margin-bottom: 1.5rem;
   padding-bottom: 1rem;
-  border-bottom: 1px solid var(--input-border-color);
+  border-bottom: 1px solid var(--color-borde-input);
   flex-grow: 1;
   overflow-y: auto;
   max-height: 30vh;
   padding-right: 0.5rem;
   scrollbar-width: thin;
-  scrollbar-color: var(--input-border-color) var(--input-bg-color);
+  scrollbar-color: var(--color-borde-input) var(--color-fondo-input);
 }
-.resumen-container::-webkit-scrollbar { width: 8px; }
-.resumen-container::-webkit-scrollbar-track { background: var(--input-bg-color); border-radius: 4px; }
-.resumen-container::-webkit-scrollbar-thumb { background-color: var(--input-border-color); border-radius: 4px; border: 2px solid var(--input-bg-color); }
-.resumen-container::-webkit-scrollbar-thumb:hover { background-color: var(--text-secondary-color); }
+.resumen-container::-webkit-scrollbar {
+  width: 8px;
+}
+.resumen-container::-webkit-scrollbar-track {
+  background: var(--color-fondo-input);
+  border-radius: 4px;
+}
+.resumen-container::-webkit-scrollbar-thumb {
+  background-color: var(--color-borde-input);
+  border-radius: 4px;
+  border: 2px solid var(--color-fondo-input);
+}
+.resumen-container::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-texto-secundario);
+}
 
 .resumen-container h4 {
   margin-top: 0;
   margin-bottom: 1rem;
-  color: var(--text-color);
+  color: var(--color-texto);
   text-align: center;
 }
 
-/* Grupo de cada ejercicio */
 .resumen-ejercicio-grupo {
   margin-bottom: 1.25rem;
   padding-bottom: 0.75rem;
@@ -258,19 +272,17 @@
   border-bottom: none;
 }
 
-/* Cabecera del ejercicio (nombre) */
 .resumen-ejercicio-header {
   margin-bottom: 0.5rem;
   padding: 0.2rem 0.5rem;
-  background-color: var(--input-bg-color);
+  background-color: var(--color-fondo-input);
   border-radius: 4px;
 }
 .resumen-ejercicio-header strong {
   font-size: 1.05rem;
-  color: var(--text-color);
+  color: var(--color-texto);
 }
 
-/* Lista de series dentro de un ejercicio */
 .resumen-series-lista {
   list-style: none;
   padding: 0;
@@ -279,29 +291,28 @@
 
 .resumen-series-lista li {
   padding: 0.5rem 0;
-  border-bottom: 1px solid var(--input-border-color);
+  border-bottom: 1px solid var(--color-borde-input);
 }
 .resumen-series-lista li:last-child {
   border-bottom: none;
 }
 
-/* Contenedor para los detalles de la serie */
 .resumen-serie-detalle {
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 1rem;
   font-size: 0.9rem;
-  color: var(--text-color);
+  color: var(--color-texto);
   flex-wrap: wrap;
 }
 .resumen-serie-detalle span:first-child {
-  color: var(--text-secondary-color);
+  color: var(--color-texto-secundario);
   flex-shrink: 0;
 }
-/* Solución: Añadimos "span" para aumentar la especificidad */
+
 .resumen-serie-detalle span .fallo-tag {
-    background-color: var(--primary-color);
+    background-color: var(--color-principal);
     color: #fff; 
     font-size: 0.75rem;
     padding: 0.1rem 0.4rem;
@@ -311,19 +322,17 @@
     white-space: nowrap;
 }
 
-/* Nota de la serie */
 .resumen-serie-nota {
   font-size: 0.85rem;
-  color: var(--text-secondary-color);
+  color: var(--color-texto-secundario);
   margin: 0.3rem 0 0 0.5rem;
   padding-top: 0.3rem;
   word-break: break-word;
 }
 
-/* Mensaje de vacío */
 .resumen-vacio {
   text-align: center;
-  color: var(--text-secondary-color);
+  color: var(--color-texto-secundario);
   font-style: italic;
   padding: 1rem 0;
 }

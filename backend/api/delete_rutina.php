@@ -1,9 +1,10 @@
 <?php
-// ---- backend/api/delete_rutina.php ----
+// Borrar rutina
 
+// Cabeceras para peticiones desde el frontend
 header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json; charset=UTF-8");
-header("Access-Control-Allow-Methods: POST, OPTIONS"); // Usamos POST para borrar
+header("Access-Control-Allow-Methods: POST, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
@@ -11,24 +12,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-require_once '../config/database.php';
+// Cargar conexion y JWT
+require_once '../config/base_de_datos.php';
 require_once '../vendor/autoload.php';
+require_once '../config/configuracion_jwt.php';
 use \Firebase\JWT\JWT;
 use \Firebase\JWT\Key;
 
-// --- PASO 1: Validación de Token (Estándar) ---
-$secret_key = "k#f9JLz@p7W!bN8^vG2*qR5sT&eD4hX%uY1aC6oP3zM0xQñ";
-$jwt = null;
-$authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? null;
-$usuario_id = null;
-if ($authHeader) {
-    $arr = explode(" ", $authHeader);
-    $jwt = $arr[1] ?? null;
+// Validar token y extraer usuario
+$clave_secreta = JWT_SECRET;
+$token = null;
+$cabecera = $_SERVER['HTTP_AUTHORIZATION'] ?? null;
+$id_usuario = null;
+if ($cabecera) {
+    $partes = explode(" ", $cabecera);
+    $token = $partes[1] ?? null;
 }
-if ($jwt) {
+if ($token) {
     try {
-        $decoded = JWT::decode($jwt, new Key($secret_key, 'HS256'));
-        $usuario_id = $decoded->data->id;
+        $decodificado = JWT::decode($token, new Key($clave_secreta, 'HS256'));
+        $id_usuario = $decodificado->data->id;
     } catch (Exception $e) { 
         http_response_code(401); 
         echo json_encode(array("mensaje" => "Acceso denegado. Token inválido.")); 
@@ -40,49 +43,43 @@ if ($jwt) {
     die();
 }
 
-// --- PASO 2: Obtener ID a borrar ---
-$data = json_decode(file_get_contents("php://input"));
+// Obtener ID a borrar
+$datos = json_decode(file_get_contents("php://input"));
 
-if (empty($data->id)) {
+if (empty($datos->id)) {
     http_response_code(400);
     echo json_encode(array("mensaje" => "No se especificó el ID de la rutina a borrar."));
     die();
 }
-$rutina_id_a_borrar = $data->id;
+$id_rutina = $datos->id;
 
-// --- PASO 3: Lógica de Borrado ---
-$database = new Database();
-$db = $database->getConnection();
+// Borrar la rutina
+$bd = new Database();
+$conexion = $bd->getConnection();
 
 try {
-    $db->beginTransaction();
-    
-    // 1. (SEGURIDAD) Verificar propiedad
-    $check_query = "SELECT id FROM rutinas 
+    // Verificar propiedad
+    $consulta_dueno = "SELECT id FROM rutinas 
                     WHERE id = :rutina_id AND usuario_id = :usuario_id";
-    $stmt_check = $db->prepare($check_query);
-    $stmt_check->bindParam(":rutina_id", $rutina_id_a_borrar, PDO::PARAM_INT);
-    $stmt_check->bindParam(":usuario_id", $usuario_id, PDO::PARAM_INT);
+    $stmt_check = $conexion->prepare($consulta_dueno);
+    $stmt_check->bindParam(":rutina_id", $id_rutina, PDO::PARAM_INT);
+    $stmt_check->bindParam(":usuario_id", $id_usuario, PDO::PARAM_INT);
     $stmt_check->execute();
     
     if ($stmt_check->rowCount() == 0) {
         throw new Exception("Rutina no encontrada o no te pertenece.", 404);
     }
     
-    // 2. BORRAR la rutina (CASCADE se encarga de lo demás)
-    $query_delete = "DELETE FROM rutinas WHERE id = :rutina_id";
-    $stmt_delete = $db->prepare($query_delete);
-    $stmt_delete->bindParam(":rutina_id", $rutina_id_a_borrar, PDO::PARAM_INT);
+    // Borrar la rutina (CASCADE se encarga de lo demas)
+    $consulta_borrar = "DELETE FROM rutinas WHERE id = :rutina_id";
+    $stmt_delete = $conexion->prepare($consulta_borrar);
+    $stmt_delete->bindParam(":rutina_id", $id_rutina, PDO::PARAM_INT);
     $stmt_delete->execute();
 
-    // 3. Commit
-    $db->commit();
-    
     http_response_code(200);
     echo json_encode(array("mensaje" => "Rutina eliminada exitosamente."));
 
 } catch (Exception $e) {
-    $db->rollBack();
     $codigo = $e->getCode() == 404 ? 404 : 500;
     http_response_code($codigo);
     echo json_encode(array(

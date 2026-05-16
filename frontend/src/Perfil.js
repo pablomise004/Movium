@@ -1,392 +1,205 @@
-// ---- frontend/src/Perfil.js (AHORA SÍ, CON onKeyDown + handleChange) ----
+// Pantalla de perfil
 
 import React, { useState, useEffect } from 'react';
-import './Perfil.css'; // Asegúrate que la ruta es correcta
+import './Perfil.css';
 import iconoPerfil from './assets/mi-perfil.png';
-import { API_BASE_URL } from './config';
+import { API_BASE_URL } from './configuracion';
 
 function Perfil() {
-  // --- Estados del Componente (sin cambios) ---
-  const [formData, setFormData] = useState({
+  const [datosForm, setDatosForm] = useState({
     nombre_usuario: '', correo_electronico: '', telefono: '',
     nombre_real: '', apellidos: '', fecha_nacimiento: '',
     altura_cm: '', peso_kg: '', direccion: ''
   });
-  const [loading, setLoading] = useState(true);
+  const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
-  const [mensajeExito, setMensajeExito] = useState(null);
-  const today = new Date().toISOString().split('T')[0];
+  const [mensajeOk, setMensajeOk] = useState(null);
+  const hoy = new Date().toISOString().split('T')[0];
 
-  // --- ¡FUNCIÓN REINTRODUCIDA! ---
-  /**
-   * Bloquea la entrada de teclas no deseadas en inputs numéricos.
-   * @param {Event} e El evento de teclado (onKeyDown)
-   * @param {boolean} allowDecimal Si es true, permite '.' y ','
-   */
-  const handleNumericKeyDown = (e, allowDecimal = false) => {
-    // Teclas siempre permitidas: Backspace, Tab, Flechas, Supr, Inicio, Fin
-    if ([8, 9, 37, 39, 46, 35, 36].includes(e.keyCode)) {
-      return;
-    }
-
-    // Bloquear 'e', '+', '-' (signo menos)
-    if (['e', 'E', '+', '-'].includes(e.key)) {
+  // Bloquea teclas no validas en inputs numericos
+  const manejarTeclaNumerica = (e, permitirDecimal = false) => {
+    if (e.key === 'e' || e.key === 'E' || e.key === '+' || e.key === '-') {
       e.preventDefault();
       return;
     }
-
-    // Si NO se permite decimal, bloquear '.' y ','
-    if (!allowDecimal && ['.', ','].includes(e.key)) {
+    if (!permitirDecimal && (e.key === '.' || e.key === ',')) {
       e.preventDefault();
       return;
     }
   };
-  // --- FIN FUNCIÓN REINTRODUCIDA ---
 
-  // --- useEffect para mensajes temporales (sin cambios) ---
-  useEffect(() => {
-    if (error) {
-      const errorTimer = setTimeout(() => {
-        setError(null);
-      }, 5000); 
-      return () => clearTimeout(errorTimer);
-    }
-  }, [error]);
-
-  useEffect(() => {
-    if (mensajeExito) {
-      const successTimer = setTimeout(() => {
-        setMensajeExito(null);
-      }, 3000); 
-      return () => clearTimeout(successTimer);
-    }
-  }, [mensajeExito]);
-
-  // --- useEffect para Cargar Datos Iniciales (sin cambios) ---
+  // Cargar datos del perfil al entrar
   useEffect(() => {
     const cargarPerfil = async () => {
-      setLoading(true);
-      setError(null); 
-      setMensajeExito(null); 
+      setCargando(true);
+      setError(null); setMensajeOk(null);
       const token = localStorage.getItem('movium_token');
-
       if (!token) {
         setError("Error de autenticación. Por favor, inicia sesión de nuevo.");
-        setLoading(false);
+        setCargando(false);
         return;
       }
-
       try {
-        const response = await fetch(`${API_BASE_URL}get_perfil.php`, {
+        const respuesta = await fetch(`${API_BASE_URL}get_perfil.php`, {
           method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          }
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }
         });
-        const data = await response.json();
-        if (!response.ok) {
-          throw new Error(data.mensaje || 'No se pudo cargar el perfil.');
-        }
-
-        setFormData({
-          nombre_usuario: data.nombre_usuario || '',
-          correo_electronico: data.correo_electronico || '',
-          telefono: data.telefono || '',
-          nombre_real: data.nombre_real || '',
-          apellidos: data.apellidos || '',
-          fecha_nacimiento: data.fecha_nacimiento || '',
-          altura_cm: data.altura_cm || '',
-          peso_kg: data.peso_kg || '',
-          direccion: data.direccion || ''
+        const datos = await respuesta.json();
+        if (!respuesta.ok) throw new Error(datos.mensaje || 'No se pudo cargar el perfil.');
+        setDatosForm({
+          nombre_usuario: datos.nombre_usuario || '',
+          correo_electronico: datos.correo_electronico || '',
+          telefono: datos.telefono || '',
+          nombre_real: datos.nombre_real || '',
+          apellidos: datos.apellidos || '',
+          fecha_nacimiento: datos.fecha_nacimiento || '',
+          altura_cm: datos.altura_cm || '',
+          peso_kg: datos.peso_kg || '',
+          direccion: datos.direccion || ''
         });
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
+        setCargando(false);
+      } catch (error) {
+        setError(error.message);
+        setCargando(false);
       }
     };
     cargarPerfil();
   }, []);
 
-  // --- ¡CAMBIO PRINCIPAL AQUÍ! ---
-  // --- Manejador de Cambios en Inputs (AHORA CON VALIDACIÓN DE LONGITUD Y FORMATO) ---
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    
-    // Limpiar mensajes al escribir
+  const manejarCambio = (e) => {
+    const campo = e.target.name;
+    const valor = e.target.value;
     setError(null);
-    setMensajeExito(null);
+    setMensajeOk(null);
 
-    // --- REGLAS DE VALIDACIÓN ---
-
-    if (name === 'altura_cm') {
-      // onKeyDown ya ha bloqueado '-', 'e', '.' etc.
-      // Solo necesitamos preocuparnos por la longitud máxima.
-      if (value.length > 3) {
-        return; // No actualiza el estado si se excede
-      }
-      setFormData(prevData => ({ ...prevData, [name]: value }));
-      
-    } else if (name === 'peso_kg') {
-      // onKeyDown ya ha bloqueado '-', 'e', '+'.
-      // Solo nos preocupamos por el formato (ej: 123.45) y la longitud.
-      
-      // Esta regex permite:
-      // - Un string vacío
-      // - Hasta 3 dígitos enteros (ej: 123)
-      // - Hasta 3 dígitos, un punto/coma, y hasta 2 decimales (ej: 123.45)
-      const regexPeso = /^(|\d{1,3}([.,]\d{0,2})?)$/;
-      
-      // Comprobamos la regex Y la longitud total (incluyendo el punto/coma)
-      if (regexPeso.test(value) && value.length <= 6) {
-        // Estandariza la coma a un punto para el estado
-        const standardizedValue = value.replace(',', '.');
-        setFormData(prevData => ({ ...prevData, [name]: standardizedValue }));
-      }
-      // Si no cumple (ej: 70.555 o 1234.5), no actualiza el estado
-      // (Evita que escribas el 3er decimal o el 4º dígito entero)
-
-    } else {
-      // Comportamiento normal para el resto de inputs (que usan maxLength HTML)
-      setFormData(prevData => ({ ...prevData, [name]: value }));
+    // Actualizar el campo que corresponda
+    if (campo === 'correo_electronico') {
+      setDatosForm({ ...datosForm, correo_electronico: valor });
+    } else if (campo === 'telefono') {
+      setDatosForm({ ...datosForm, telefono: valor });
+    } else if (campo === 'nombre_real') {
+      setDatosForm({ ...datosForm, nombre_real: valor });
+    } else if (campo === 'apellidos') {
+      setDatosForm({ ...datosForm, apellidos: valor });
+    } else if (campo === 'fecha_nacimiento') {
+      setDatosForm({ ...datosForm, fecha_nacimiento: valor });
+    } else if (campo === 'altura_cm') {
+      if (valor.length > 3) return;
+      setDatosForm({ ...datosForm, altura_cm: valor });
+    } else if (campo === 'peso_kg') {
+      setDatosForm({ ...datosForm, peso_kg: valor });
+    } else if (campo === 'direccion') {
+      setDatosForm({ ...datosForm, direccion: valor });
     }
   };
-  // --- FIN DEL CAMBIO ---
 
-  // --- Manejador de Envío del Formulario (sin cambios) ---
-  const handleSubmit = async (e) => {
-    e.preventDefault(); 
-    setError(null); 
-    setMensajeExito(null);
+  const manejarEnvio = async (e) => {
+    e.preventDefault();
+    setError(null); setMensajeOk(null);
     const token = localStorage.getItem('movium_token');
-    
-    // Validaciones (sin cambios, ya las tenías)
     try {
-      if (formData.correo_electronico && !/\S+@\S+\.\S+/.test(formData.correo_electronico)) {
+      // Comprueba que el correo tiene al menos el formato algo@algo.algo
+      // no es perfecto pero sirve para detectar errores basicos
+      if (datosForm.correo_electronico && !/\S+@\S+\.\S+/.test(datosForm.correo_electronico)) {
         throw new Error("Por favor, introduce un formato de correo válido.");
       }
-      if (formData.telefono && (formData.telefono.length < 9 || formData.telefono.length > 15 || !/^\d+$/.test(formData.telefono))) {
-         throw new Error("El formato del teléfono no es válido (debe tener entre 9 y 15 dígitos numéricos).");
+      // El telefono tiene que ser solo numeros y entre 9 y 15 digitos
+      if (datosForm.telefono && (datosForm.telefono.length < 9 || datosForm.telefono.length > 15 || !/^\d+$/.test(datosForm.telefono))) {
+        throw new Error("El formato del teléfono no es válido.");
       }
-      if (formData.altura_cm && (formData.altura_cm < 50 || formData.altura_cm > 300)) {
-         throw new Error("La altura debe estar entre 50 y 300 cm.");
+      if (datosForm.altura_cm && (datosForm.altura_cm < 50 || datosForm.altura_cm > 300)) {
+        throw new Error("La altura debe estar entre 50 y 300 cm.");
       }
-      if (formData.peso_kg && (formData.peso_kg < 30 || formData.peso_kg > 300)) {
-         throw new Error("El peso debe estar entre 30 y 300 kg.");
+      if (datosForm.peso_kg && (datosForm.peso_kg < 30 || datosForm.peso_kg > 300)) {
+        throw new Error("El peso debe estar entre 30 y 300 kg.");
       }
-      if (formData.nombre_real && formData.nombre_real.length > 100) {
-        throw new Error("El nombre no puede tener más de 100 caracteres.");
-      }
-       if (formData.apellidos && formData.apellidos.length > 150) {
-        throw new Error("Los apellidos no pueden tener más de 150 caracteres.");
-      }
-       if (formData.direccion && formData.direccion.length > 255) {
-        throw new Error("La dirección no puede tener más de 255 caracteres.");
-      }
-
-      const dataToSend = { ...formData };
-      
-      const response = await fetch(`${API_BASE_URL}update_perfil.php`, {
+      const respuesta = await fetch(`${API_BASE_URL}update_perfil.php`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(dataToSend)
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify(datosForm)
       });
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.mensaje || 'Error al guardar el perfil.');
-      }
-      setMensajeExito(data.mensaje || "Perfil actualizado con éxito.");
-    } catch (err) {
-      setError(err.message);
+      const datos = await respuesta.json();
+      if (!respuesta.ok) throw new Error(datos.mensaje || 'Error al guardar el perfil.');
+      setMensajeOk(datos.mensaje || "Perfil actualizado con éxito.");
+      setTimeout(() => setMensajeOk(null), 3000);
+    } catch (error) {
+      setError(error.message);
+      setTimeout(() => setError(null), 5000);
     }
   };
 
-  // --- Renderizado Condicional (Loading) ---
-  if (loading) {
-    return (
-      <div className="perfil-container">
-        <p className="subtitle" style={{ textAlign: 'center' }}>Cargando perfil...</p>
-      </div>
-    );
+  if (cargando) {
+    return <div className="perfil-container"><p className="subtitle" style={{ textAlign: 'center' }}>Cargando perfil...</p></div>;
   }
 
-  // --- Renderizado Principal ---
   return (
     <div className="perfil-container">
-
-      {/* Cabecera con Icono y Títulos */}
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '0.5rem', gap: '10px' }}>
         <img src={iconoPerfil} alt="" width="64" height="64" />
         <h2>Mi Perfil</h2>
       </div>
-      <p className="subtitle" style={{ textAlign: 'center' }}>
-        Actualiza tu información personal y de contacto.
-       </p>
+      <p className="subtitle" style={{ textAlign: 'center' }}>Actualiza tu información personal y de contacto.</p>
 
-      {/* Formulario */}
-      <form className="perfil-form" onSubmit={handleSubmit}>
-
-        {/* Grid para los campos del formulario */}
+      <form className="perfil-form" onSubmit={manejarEnvio}>
         <div className="form-grid-perfil">
 
-          {/* Nombre de Usuario (Deshabilitado) */}
           <div className="form-group-perfil form-span-2">
             <label htmlFor="nombre_usuario">Nombre de Usuario (no se puede cambiar)</label>
-             <input
-              type="text"
-              id="nombre_usuario"
-              name="nombre_usuario"
-              value={formData.nombre_usuario}
-              readOnly
-              className="input-disabled"
-            />
-           </div>
+            <input type="text" id="nombre_usuario" name="nombre_usuario" value={datosForm.nombre_usuario} readOnly className="input-disabled" />
+          </div>
 
-          {/* Correo Electrónico */}
           <div className="form-group-perfil form-span-2">
             <label htmlFor="correo_electronico">Correo Electrónico</label>
-            <input
-              type="email"
-              id="correo_electronico"
-              name="correo_electronico"
-              value={formData.correo_electronico}
-              onChange={handleChange}
-              placeholder="tu@correo.com"
-              maxLength="100" 
-            />
-           </div>
+            <input type="email" id="correo_electronico" name="correo_electronico" value={datosForm.correo_electronico} onChange={manejarCambio} placeholder="tu@correo.com" maxLength="100" />
+          </div>
 
-                     {/* Nombre Real */}
           <div className="form-group-perfil">
             <label htmlFor="nombre_real">Nombre</label>
-           <input
-              type="text"
-              id="nombre_real"
-              name="nombre_real"
-              value={formData.nombre_real}
-              onChange={handleChange}
-              placeholder="Tu nombre"
-              maxLength="100" 
-            />
+            <input type="text" id="nombre_real" name="nombre_real" value={datosForm.nombre_real} onChange={manejarCambio} placeholder="Tu nombre" maxLength="100" />
           </div>
 
-          {/* Apellidos */}
           <div className="form-group-perfil">
             <label htmlFor="apellidos">Apellidos</label>
-            <input
-              type="text"
-               id="apellidos"
-              name="apellidos"
-              value={formData.apellidos}
-              onChange={handleChange}
-              placeholder="Tus apellidos"
-              maxLength="150" 
-            />
-           </div>
+            <input type="text" id="apellidos" name="apellidos" value={datosForm.apellidos} onChange={manejarCambio} placeholder="Tus apellidos" maxLength="150" />
+          </div>
 
-          {/* Teléfono */}
-           <div className="form-group-perfil">
+          <div className="form-group-perfil">
             <label htmlFor="telefono">Teléfono</label>
-            <input
-              type="tel"
-              id="telefono"
-              name="telefono"
-              value={formData.telefono}
-               onChange={handleChange}
-              placeholder="Tu número de teléfono"
-              minLength="9"
-              maxLength="15" 
-              pattern="\d*" 
-            />
+            <input type="tel" id="telefono" name="telefono" value={datosForm.telefono} onChange={manejarCambio} placeholder="Tu número de teléfono" minLength="9" maxLength="15" pattern="\d*" />
           </div>
 
-        
-           {/* Fecha de Nacimiento */}
-           <div className="form-group-perfil">
+          <div className="form-group-perfil">
             <label htmlFor="fecha_nacimiento">Fecha de Nacimiento</label>
-            <input
-              type="date"
-              id="fecha_nacimiento"
-              name="fecha_nacimiento"
-               value={formData.fecha_nacimiento}
-              onChange={handleChange}
-              max={today} 
-            />
+            <input type="date" id="fecha_nacimiento" name="fecha_nacimiento" value={datosForm.fecha_nacimiento} onChange={manejarCambio} max={hoy} />
           </div>
 
-           {/* Altura */}
-           <div className="form-group-perfil">
+          <div className="form-group-perfil">
             <label htmlFor="altura_cm">Altura (cm)</label>
-            <input
-              type="number" // Mantenemos type="number" por el teclado numérico en móviles
-              id="altura_cm"
-              name="altura_cm"
-               value={formData.altura_cm}
-              onChange={handleChange} // ¡Validación al cambiar!
-              placeholder="Tu altura"
-              min="50" 
-              max="300" 
-              step="1" 
-              onKeyDown={(e) => handleNumericKeyDown(e, false)} // ¡Bloqueo de teclas!
-            />
+            <input type="number" id="altura_cm" name="altura_cm" value={datosForm.altura_cm} onChange={manejarCambio} placeholder="Tu altura" min="50" max="300" step="1" onKeyDown={(e) => manejarTeclaNumerica(e, false)} />
           </div>
 
-           {/* Peso */}
           <div className="form-group-perfil">
             <label htmlFor="peso_kg">Peso (kg)</label>
-            <input
-              type="number" // Mantenemos type="number"
-              id="peso_kg"
-              name="peso_kg"
-              value={formData.peso_kg}
-               onChange={handleChange} // ¡Validación al cambiar!
-              placeholder="Tu peso"
-              min="30"  
-              max="300" 
-              step="0.01" 
-              onKeyDown={(e) => handleNumericKeyDown(e, true)} // ¡Bloqueo de teclas!
-            />
-           </div>
-           {/* --- FIN DEL CAMBIO --- */}
-
-
-          {/* Dirección */}
-          <div className="form-group-perfil form-span-2">
-            <label htmlFor="direccion">Dirección</label>
-            <input
-              type="text"
-              id="direccion"
-              name="direccion"
-               value={formData.direccion}
-              onChange={handleChange}
-              placeholder="Tu dirección"
-              maxLength="255" 
-            />
+            <input type="number" id="peso_kg" name="peso_kg" value={datosForm.peso_kg} onChange={manejarCambio} placeholder="Tu peso" min="30" max="300" step="0.01" onKeyDown={(e) => manejarTeclaNumerica(e, true)} />
           </div>
 
-        </div> {/* Fin del form-grid-perfil */}
+          <div className="form-group-perfil form-span-2">
+            <label htmlFor="direccion">Dirección</label>
+            <input type="text" id="direccion" name="direccion" value={datosForm.direccion} onChange={manejarCambio} placeholder="Tu dirección" maxLength="255" />
+          </div>
 
-        {/* --- Zona de Mensajes (sin cambios) --- */}
-        <div style={{ marginTop: '1.5rem', marginBottom: '0.5rem', minHeight: '2.5rem' }}> 
+        </div>
+
+        <div style={{ marginTop: '1.5rem', marginBottom: '0.5rem', minHeight: '2.5rem' }}>
           {error && <div className="message">{error}</div>}
-          {mensajeExito && <div className="message success">{mensajeExito}</div>}
+          {mensajeOk && <div className="message success">{mensajeOk}</div>}
         </div>
-        {/* --- FIN MENSAJES --- */}
 
-
-        {/* Botón Guardar Cambios */}
         <div className="form-actions-perfil">
-          <button type="submit" className="transparent-btn">
-             Guardar Cambios
-           </button>
+          <button type="submit" className="transparent-btn">Guardar Cambios</button>
         </div>
-
-      </form> {/* Fin del perfil-form */}
-    </div> // Fin del perfil-container
+      </form>
+    </div>
   );
 }
 

@@ -1,32 +1,41 @@
 <?php
-// ---- backend/api/get_perfil.php ----
+// Obtener perfil del usuario
 
+// Cabeceras para peticiones desde el frontend
 header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json; charset=UTF-8");
-header("Access-Control-Allow-Methods: GET");
+header("Access-Control-Allow-Methods: GET, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
 
-require_once '../config/database.php';
+// El navegador hace una peticion previa OPTIONS antes de mandar el token,
+// si no la gestionamos aqui devuelve error y no carga el perfil
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit();
+}
+
+require_once '../config/base_de_datos.php';
 require_once '../vendor/autoload.php';
+require_once '../config/configuracion_jwt.php';
 
 use \Firebase\JWT\JWT;
 use \Firebase\JWT\Key;
 
-$secret_key = "k#f9JLz@p7W!bN8^vG2*qR5sT&eD4hX%uY1aC6oP3zM0xQñ";
+$clave_secreta = JWT_SECRET;
 
-// --- PASO 1: Validación de Token (Idéntica) ---
-$jwt = null;
-$authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? null;
-$usuario_id = null; 
+// Validar token
+$token = null;
+$cabecera = $_SERVER['HTTP_AUTHORIZATION'] ?? null;
+$id_usuario = null; 
 
-if ($authHeader) {
-    $arr = explode(" ", $authHeader);
-    $jwt = $arr[1] ?? null;
+if ($cabecera) {
+    $partes = explode(" ", $cabecera);
+    $token = $partes[1] ?? null;
 }
-if ($jwt) {
+if ($token) {
     try {
-        $decoded = JWT::decode($jwt, new Key($secret_key, 'HS256'));
-        $usuario_id = $decoded->data->id;
+        $decodificado = JWT::decode($token, new Key($clave_secreta, 'HS256'));
+        $id_usuario = $decodificado->data->id;
     } catch (Exception $e) {
         http_response_code(401);
         echo json_encode(array("mensaje" => "Acceso denegado. Token inválido."));
@@ -38,19 +47,19 @@ if ($jwt) {
     die();
 }
 
-// --- PASO 2: Lógica para obtener el perfil ---
+// Obtener el perfil
 try {
-    $database = new Database();
-    $db = $database->getConnection();
+    $bd = new Database();
+    $conexion = $bd->getConnection();
 
-    $query = "SELECT 
+    $consulta = "SELECT
                   u.nombre_usuario, 
                   u.correo_electronico,
                   p.nombre_real,
                   p.apellidos,
                   p.fecha_nacimiento,
                   p.altura_cm,
-                  p.peso_kg, -- <-- ¡CAMBIO AQUÍ!
+                  p.peso_kg,
                   p.telefono,
                   p.direccion
                 FROM 
@@ -61,11 +70,11 @@ try {
                   u.id = :usuario_id
                 LIMIT 1";
     
-    $stmt = $db->prepare($query);
-    $stmt->bindParam(":usuario_id", $usuario_id, PDO::PARAM_INT);
-    $stmt->execute();
-    
-    $perfil = $stmt->fetch(PDO::FETCH_ASSOC);
+    $sentencia = $conexion->prepare($consulta);
+    $sentencia->bindParam(":usuario_id", $id_usuario, PDO::PARAM_INT);
+    $sentencia->execute();
+
+    $perfil = $sentencia->fetch(PDO::FETCH_ASSOC);
 
     if ($perfil) {
         http_response_code(200);

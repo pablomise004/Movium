@@ -1,25 +1,23 @@
-// ---- frontend/src/components/Sidebar.js (CORREGIDO) ----
+// Menu lateral
 import React from 'react';
-import './Sidebar.css';
+import './BarraLateral.css';
 import moviumIcon from '../assets/movium-icono.png';
 // 1. Importar useLocation además de NavLink
 import { NavLink, useLocation } from 'react-router-dom';
-// 
 
 function Sidebar() {
   // 2. Obtener el objeto location actual
-  const location = useLocation();
+  const ubicacion = useLocation();
 
   // --- Lógica de Logout (Sin cambios) ---
-  const handleLogout = () => {
+  const cerrarSesion = () => {
     localStorage.removeItem('movium_token');
     window.location.reload();
   };
 
   // --- ¡¡FUNCIÓN CORREGIDA!! ---
-  const isInicioActive = () => {
-    const { pathname } = location;
-    // Añadimos la comprobación para '/rutina/'
+  const esInicioActivo = () => {
+    const { pathname } = ubicacion;
     return pathname === '/' || 
            pathname.startsWith('/rutina/') || 
            pathname.startsWith('/sesion/') || 
@@ -39,7 +37,7 @@ function Sidebar() {
             to="/"
             className={() =>
                // Ahora llamará a la función corregida
-               `nav-link ${isInicioActive() ? 'active' : ''}`
+               `nav-link ${esInicioActivo() ? 'active' : ''}`
             }
           >
             Inicio
@@ -57,7 +55,7 @@ function Sidebar() {
       </div>
 
       <div className="sidebar-footer">
-        <button onClick={handleLogout} className="sidebar-logout-btn transparent-btn">
+        <button onClick={cerrarSesion} className="sidebar-logout-btn transparent-btn">
           Cerrar Sesión
         </button>
       </div>

@@ -1,15 +1,15 @@
-// ---- frontend/src/index.js (VERSIÓN NUEVA - ¡ESTÁ PERFECTO!) ----
+// Punto de entrada de React
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import './Global.css';
-import './index.css';
-import App from './App'; // <-- 1. Apuntará al nuevo App.js
-import { BrowserRouter } from 'react-router-dom'; // <-- 2. Importamos el Router
+import './EstilosGlobales.css';
+import './indice.css';
+import App from './Aplicacion';
+import { BrowserRouter } from 'react-router-dom';
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(
+const raiz = ReactDOM.createRoot(document.getElementById('root'));
+raiz.render(
   <React.StrictMode>
-    {/* 3. Envolvemos la App en el BrowserRouter */}
+    {/* Envolvemos la App en el router */}
     <BrowserRouter>
       <App />
     </BrowserRouter>

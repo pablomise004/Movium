@@ -1,0 +1,135 @@
+﻿@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap');
+
+:root {
+  --color-principal: #00aaff;
+  --degradado: linear-gradient(90deg, #00f2ea 0%, #8a2be2 100%);
+  --fuente: 'Montserrat', sans-serif;
+  --color-fondo: #121212;
+  --color-superficie: #1e1e1e;
+  --color-texto: #e0e0e0;
+  --color-texto-secundario: #aaa;
+  --color-fondo-input: #2c2c2c;
+  --color-borde-input: #444;
+  --sombra: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+body.light {
+  --color-fondo: #f0f2f5;
+  --color-superficie: #ffffff;
+  --color-texto: #1c1e21;
+  --color-texto-secundario: #606770;
+  --color-fondo-input: #f0f2f5;
+  --color-borde-input: #ddd;
+  --sombra: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+body {
+  margin: 0;
+  font-family: var(--fuente);
+  background-color: var(--color-fondo);
+  color: var(--color-texto);
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.button-group {
+  display: flex;
+  margin-top: 0.8rem;
+}
+
+.button-group button {
+  flex: 1; 
+}
+
+button[type="submit"],
+button.transparent-btn {
+  height: 48px;
+  border-radius: 999px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: var(--fuente);
+}
+
+.transparent-btn {
+  background: transparent;
+  color: var(--color-texto); 
+  border: 4px solid transparent;
+  
+  background-image: linear-gradient(var(--color-superficie), var(--color-superficie)),
+                    var(--degradado); 
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
+}
+
+.transparent-btn:hover {
+  box-shadow: 0 0 0 rgba(255, 255, 255, 0);
+  transform: scale(1.03);
+}
+
+.theme-toggle {
+  
+  position: absolute;
+  top: 30px;
+  right: 20px;
+  
+  background: none;
+  border: none;
+  border-radius: 0; 
+  width: 40px;
+  height: 40px;
+  font-size: 1.4rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  overflow: hidden; 
+  transition: transform 0.2s ease-in-out, opacity 0.2s ease-in-out; 
+}
+
+.theme-toggle:hover {
+  transform: scale(1.1);
+  opacity: 0.8;
+}
+
+.message {
+  margin-top: 1.5rem;
+  padding: 0.8rem;
+  border-radius: 5px;
+  font-weight: 700;
+  text-align: center;
+  background-color: rgba(217, 48, 37, 0.1);
+  color: #d93025;
+  border: 1px solid #d93025;
+}
+
+.theme-icon {
+  position: absolute; 
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  
+  transition: transform 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55), opacity 0.5s ease-in-out;
+  backface-visibility: hidden; 
+}
+
+.theme-icon.sun {
+  opacity: 0;
+  transform: rotateY(180deg); 
+}
+.theme-icon.sun.active {
+  opacity: 1;
+  transform: rotateY(0deg); 
+}
+
+.theme-icon.moon {
+  opacity: 0;
+  transform: rotateY(180deg); 
+}
+.theme-icon.moon.active {
+  opacity: 1;
+  transform: rotateY(0deg); 
+}

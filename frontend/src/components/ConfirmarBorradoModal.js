@@ -1,25 +1,25 @@
 import React from 'react';
 import './ConfirmarBorradoModal.css'; 
 
-function ConfirmarBorradoModal({ isOpen, onClose, onConfirm, rutinaNombre, isDeleting }) {
-  if (!isOpen) {
+function ConfirmarBorradoModal({ isOpen: abierto, onClose: cerrar, onConfirm: confirmar, rutinaNombre: nombreRutina, isDeleting: borrando }) {
+  if (!abierto) {
     return null;
   }
 
   return (
-    <div className="modal-backdrop-danger" onClick={onClose}>
+    <div className="modal-backdrop-danger" onClick={cerrar}>
       <div className="modal-content-danger" onClick={(e) => e.stopPropagation()}>
         
         <div className="modal-header-danger">
           <h3>Confirmar Eliminación</h3>
-          <button className="modal-close-btn-danger" onClick={onClose} disabled={isDeleting}>
+          <button className="modal-close-btn-danger" onClick={cerrar} disabled={borrando}>
             &times;
           </button>
         </div>
         
         <div className="modal-body-danger">
           <p>¡Atención! Estás a punto de borrar permanentemente la rutina:</p>
-          <strong>{rutinaNombre}</strong>
+          <strong>{nombreRutina}</strong>
           <p>Esta acción no se puede deshacer.</p>
           
           {/* --- CORRECCIÓN AQUÍ --- 
@@ -41,18 +41,18 @@ function ConfirmarBorradoModal({ isOpen, onClose, onConfirm, rutinaNombre, isDel
           <button 
             type="button" 
             className="btn-cancel-danger" 
-            onClick={onClose} 
-            disabled={isDeleting}
+            onClick={cerrar} 
+            disabled={borrando}
           >
             Cancelar
           </button>
           <button 
             type="button" 
             className="btn-confirm-danger" 
-            onClick={onConfirm} 
-            disabled={isDeleting}
+            onClick={confirmar} 
+            disabled={borrando}
           >
-            {isDeleting ? 'Eliminando...' : 'Sí, eliminar todo'}
+            {borrando ? 'Eliminando...' : 'Sí, eliminar todo'}
           </button>
         </div>
 

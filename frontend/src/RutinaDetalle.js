@@ -1,56 +1,32 @@
-// ---- frontend/src/RutinaDetalle.js (CORREGIDO - Persistencia de inputs y validación) ----
+// Detalle de rutina
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import './RutinaDetalle.css';
 import SelectorEjerciciosModal from './components/SelectorEjerciciosModal';
-import EditarEjercicioModal from './components/EditarEjercicioModal';
 import ConfirmarBorradoModal from './components/ConfirmarBorradoModal';
 import ConfirmarBorrarEjercicioModal from './components/ConfirmarBorrarEjercicioModal';
 import iconoCrear from './assets/crear-ejercicios.png';
-import { API_BASE_URL } from './config';
+import { API_BASE_URL } from './configuracion';
+import { bloquearTeclasEntero, bloquearTeclasDecimal } from './utils/formato';
 
-// --- Helper de Perfil.js: Bloquea teclas (e, +, -, etc.) ---
-const handleNumericKeyDown = (e, allowDecimal = false) => {
-  // Teclas siempre permitidas
-  if ([8, 9, 37, 39, 46, 35, 36].includes(e.keyCode)) {
-    return;
-  }
-  // Bloquear 'e', '+', '-'
-  if (['e', 'E', '+', '-'].includes(e.key)) {
-    e.preventDefault();
-    return;
-  }
-  // Si NO se permite decimal, bloquear '.' y ','
-  if (!allowDecimal && ['.', ','].includes(e.key)) {
-    e.preventDefault();
-    return;
-  }
-};
-
-/**
- * Componente interno para el formulario de *creación* de series de Fuerza.
- */
+// Formulario para crear series de fuerza
 const FormularioFuerza = ({
   objetivos,
   setObjetivos,
-  // Estados
   tipoRep, setTipoRep,
   repsMin,
   repsMax,
   peso,
   descanso,
-  // Handler
   onFormChange
 }) => {
 
-  // Borra una serie de la lista temporal de 'objetivosParaAgregar'
-  const handleRemoveSerie = (num_serie) => {
+  const borrarSerie = (num_serie) => {
     setObjetivos(objetivos.filter(s => s.num_serie !== num_serie).map((s, i) => ({ ...s, num_serie: i + 1 })));
   };
 
-  // Formatea la previsualización de la serie en la lista temporal
-  const formatPreviewObjetivo = (obj) => {
+  const formatearPreview = (obj) => {
     let repStr = "";
     if (obj.tipo_rep_objetivo === 'fallo') {
       repStr = `Al Fallo (~${obj.reps_min_objetivo || '?'}r)`;
@@ -59,31 +35,27 @@ const FormularioFuerza = ({
     } else {
       repStr = `${obj.reps_min_objetivo || '?'} reps`;
     }
-    let pesoStr = obj.peso_kg_objetivo ?
-      ` con ${obj.peso_kg_objetivo}kg` : '';
-    let descansoStr = obj.descanso_seg_post ?
-      ` (${obj.descanso_seg_post}s)` : '';
+    let pesoStr = obj.peso_kg_objetivo ? ` con ${obj.peso_kg_objetivo}kg` : '';
+    let descansoStr = obj.descanso_seg_post ? ` (${obj.descanso_seg_post}s)` : '';
     return `${repStr}${pesoStr}${descansoStr}`;
   };
 
   return (
     <div style={{ gridColumn: '1 / -1' }}>
-      {/* Lista de previsualización de series añadidas */}
       <div className="lista-series-preview">
         {objetivos.length === 0 ? (
           <p className="subtitle" style={{ margin: 0, fontSize: '0.9rem', textAlign: 'center' }}>Añade tu primera serie...</p>
         ) : (
           objetivos.map(s => (
             <div key={s.num_serie} className="serie-preview-item">
-              <span><strong>Serie {s.num_serie}:</strong> {formatPreviewObjetivo(s)}</span>
-              <button type="button" className="btn-delete-small" onClick={() => handleRemoveSerie(s.num_serie)} aria-label={`Borrar serie ${s.num_serie}`}>Borrar</button>
+              <span><strong>Serie {s.num_serie}:</strong> {formatearPreview(s)}</span>
+              <button type="button" className="btn-delete-small" onClick={() => borrarSerie(s.num_serie)}>Borrar</button>
             </div>
           ))
         )}
       </div>
 
-      {/* Inputs para añadir la SIGUIENTE serie */}
-      <div className="form-grid" style={{ borderTop: '1px solid var(--input-border-color)', paddingTop: '1rem', marginTop: '1rem' }}>
+      <div className="form-grid" style={{ borderTop: '1px solid var(--color-borde-input)', paddingTop: '1rem', marginTop: '1rem' }}>
         <div className="form-rep-grid" style={{ gridColumn: 'span 3' }}>
           <div className="form-group-small">
             <label htmlFor={`tipo-rep-input-${objetivos.length + 1}`}>Tipo Reps</label>
@@ -99,14 +71,13 @@ const FormularioFuerza = ({
             </label>
             <input
               id={`reps-input-${objetivos.length + 1}`}
-              type="number" // Mantenemos number por el teclado móvil
+              type="number"
               min={tipoRep === 'fallo' ? "0" : "1"}
               value={repsMin}
-              placeholder={tipoRep === 'fallo' ? "Obligatorio" : "Obligatorio"}
-              // --- ¡CAMBIO! Quitamos 'required' ---
+              placeholder="Obligatorio"
               name="repsMin"
               onChange={onFormChange}
-              onKeyDown={(e) => handleNumericKeyDown(e, false)} // No decimales
+              onKeyDown={bloquearTeclasEntero}
             />
           </div>
           {tipoRep === 'rango' && (
@@ -118,10 +89,9 @@ const FormularioFuerza = ({
                 min={(parseInt(repsMin, 10) || 0) + 1}
                 value={repsMax}
                 placeholder="Obligatorio"
-                // --- ¡CAMBIO! Quitamos 'required' ---
                 name="repsMax"
                 onChange={onFormChange}
-                onKeyDown={(e) => handleNumericKeyDown(e, false)} // No decimales
+                onKeyDown={bloquearTeclasEntero}
               />
             </div>
           )}
@@ -130,15 +100,14 @@ const FormularioFuerza = ({
           <label htmlFor={`peso-input-${objetivos.length + 1}`}>Peso (kg)</label>
           <input
             id={`peso-input-${objetivos.length + 1}`}
-            type="number" // Mantenemos number
-            step="0.01" // Permitimos decimales
+            type="number"
+            step="0.01"
             min="0"
             value={peso}
             placeholder="Obligatorio"
-            // --- ¡CAMBIO! Quitamos 'required' ---
             name="peso"
             onChange={onFormChange}
-            onKeyDown={(e) => handleNumericKeyDown(e, true)} // SÍ decimales
+            onKeyDown={bloquearTeclasDecimal}
           />
         </div>
         <div className="form-group-small">
@@ -151,7 +120,7 @@ const FormularioFuerza = ({
             placeholder="Opcional"
             name="descanso"
             onChange={onFormChange}
-            onKeyDown={(e) => handleNumericKeyDown(e, false)} // No decimales
+            onKeyDown={bloquearTeclasEntero}
           />
         </div>
       </div>
@@ -159,27 +128,21 @@ const FormularioFuerza = ({
   );
 };
 
-/**
- * Componente interno para el formulario de *creación* de intervalos de Cardio.
- */
+// Formulario para crear intervalos de cardio
 const FormularioCardio = ({
   objetivos,
   setObjetivos,
-  // Estados
   tiempo,
   distancia,
   descanso,
-  // Handler
   onFormChange
 }) => {
 
-  // Borra un intervalo de la lista temporal
-  const handleRemoveIntervalo = (num_serie) => {
+  const borrarIntervalo = (num_serie) => {
     setObjetivos(objetivos.filter(s => s.num_serie !== num_serie).map((s, i) => ({ ...s, num_serie: i + 1 })));
   };
 
-  // Formatea la previsualización del intervalo
-  const formatPreviewIntervalo = (obj) => {
+  const formatearPreview = (obj) => {
     const partes = [];
     if (obj.tiempo_min_objetivo) partes.push(`${obj.tiempo_min_objetivo} min`);
     if (obj.distancia_km_objetivo) partes.push(`${obj.distancia_km_objetivo} km`);
@@ -190,22 +153,20 @@ const FormularioCardio = ({
 
   return (
     <div style={{ gridColumn: '1 / -1' }}>
-      {/* Lista de previsualización de intervalos añadidos */}
       <div className="lista-series-preview">
         {objetivos.length === 0 ? (
           <p className="subtitle" style={{ margin: 0, fontSize: '0.9rem', textAlign: 'center' }}>Añade tu primer intervalo...</p>
         ) : (
           objetivos.map(s => (
             <div key={s.num_serie} className="serie-preview-item">
-              <span><strong>Intervalo {s.num_serie}:</strong> {formatPreviewIntervalo(s)}</span>
-              <button type="button" className="btn-delete-small" onClick={() => handleRemoveIntervalo(s.num_serie)} aria-label={`Borrar intervalo ${s.num_serie}`}>Borrar</button>
+              <span><strong>Intervalo {s.num_serie}:</strong> {formatearPreview(s)}</span>
+              <button type="button" className="btn-delete-small" onClick={() => borrarIntervalo(s.num_serie)}>Borrar</button>
             </div>
           ))
         )}
       </div>
 
-      {/* Inputs para añadir el SIGUIENTE intervalo */}
-      <div className="form-grid" style={{ borderTop: '1px solid var(--input-border-color)', paddingTop: '1rem', marginTop: '1rem', alignItems: 'end' }}>
+      <div className="form-grid" style={{ borderTop: '1px solid var(--color-borde-input)', paddingTop: '1rem', marginTop: '1rem', alignItems: 'end' }}>
         <div className="form-group-small">
           <label htmlFor={`tiempo-input-${objetivos.length + 1}`}>Tiempo (Min)</label>
           <input
@@ -215,10 +176,9 @@ const FormularioCardio = ({
             step="1"
             value={tiempo}
             placeholder="Obligatorio"
-            // --- ¡CAMBIO! Quitamos 'required' ---
             name="tiempoCardio"
             onChange={onFormChange}
-            onKeyDown={(e) => handleNumericKeyDown(e, false)} // No decimales
+            onKeyDown={bloquearTeclasEntero}
           />
         </div>
         <div className="form-group-small">
@@ -227,13 +187,12 @@ const FormularioCardio = ({
             id={`distancia-input-${objetivos.length + 1}`}
             type="number"
             min="0.1"
-            step="0.01" // Permitimos 2 decimales
+            step="0.01"
             value={distancia}
             placeholder="Obligatorio"
-            // --- ¡CAMBIO! Quitamos 'required' ---
             name="distanciaCardio"
             onChange={onFormChange}
-            onKeyDown={(e) => handleNumericKeyDown(e, true)} // SÍ decimales
+            onKeyDown={bloquearTeclasDecimal}
           />
         </div>
         <div className="form-group-small">
@@ -246,7 +205,7 @@ const FormularioCardio = ({
             placeholder="Opcional"
             name="descansoCardio"
             onChange={onFormChange}
-            onKeyDown={(e) => handleNumericKeyDown(e, false)} // No decimales
+            onKeyDown={bloquearTeclasEntero}
           />
         </div>
       </div>
@@ -254,791 +213,473 @@ const FormularioCardio = ({
   );
 };
 
-/**
- * Función helper para formatear el objetivo (serie/intervalo)
- * para mostrar en la *tabla* principal de ejercicios guardados.
- */
-const formatObjetivoTabla = (obj, tipo) => {
-  if (tipo === 'cardio') {
-    const metricas = [];
-    if (obj.tiempo_min_objetivo) metricas.push(`${obj.tiempo_min_objetivo} min`);
-    if (obj.distancia_km_objetivo) metricas.push(`${obj.distancia_km_objetivo} km`);
-    let texto = metricas.join(' / ');
-    if (obj.descanso_seg_post) texto += ` (${obj.descanso_seg_post}s)`;
-    return <span><strong>Int. {obj.num_serie}:</strong> {texto || "Objetivo no especificado"}</span>;
-  }
-  // Fuerza
-  let repStr = "";
-  if (obj.tipo_rep_objetivo === 'fallo') {
-    repStr = `Al Fallo (~${obj.reps_min_objetivo || '?'}r)`;
-  } else if (obj.tipo_rep_objetivo === 'rango') {
-    repStr = `${obj.reps_min_objetivo || '?'}-${obj.reps_max_objetivo || '?'}r`;
-  } else {
-    repStr = `${obj.reps_min_objetivo || '?'}r`;
-  }
-  return (
-    <span>
-      <strong>S{obj.num_serie}:</strong> {repStr}
-      {obj.peso_kg_objetivo != null ? ` con ${String(obj.peso_kg_objetivo)}kg` : ''}
-      {obj.descanso_seg_post != null ? ` (${String(obj.descanso_seg_post)}s)` : ''}
-    </span>
-  );
-};
-
-/**
- * Componente principal de la página de detalles de una rutina.
- */
 function RutinaDetalle() {
 
   const { id: rutinaId } = useParams();
   const navigate = useNavigate();
-  // Estados generales de datos
-  const [rutinaInfo, setRutinaInfo] = useState(null);
-  const [ejerciciosEnRutina, setEjerciciosEnRutina] = useState([]);
-  const [ejerciciosMaestra, setEjerciciosMaestra] = useState([]);
-  const [loading, setLoading] = useState(true);
+
+  // Estados de datos
+  const [infoRutina, setInfoRutina] = useState(null);
+  const [ejerciciosRutina, setEjerciciosRutina] = useState([]);
+  const [ejerciciosBase, setEjerciciosBase] = useState([]);
+  const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
-  const [successMsg, setSuccessMsg] = useState(null);
-  const [exerciseSuccessMsg, setExerciseSuccessMsg] = useState(null);
+  const [mensajeOkEjercicio, setMensajeOkEjercicio] = useState(null);
 
-  // Estados de Modales
-  const [isSelectorModalOpen, setIsSelectorModalOpen] = useState(false);
-  const [ejercicioParaEditar, setEjercicioParaEditar] = useState(null);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
+  // Modales
+  const [modalSelectorAbierto, setModalSelectorAbierto] = useState(false);
+  const [modalBorrarRutinaAbierto, setModalBorrarRutinaAbierto] = useState(false);
+  const [borrandoRutina, setBorrandoRutina] = useState(false);
 
-  // Estados Formulario "Añadir Ejercicio"
-  const [ejercicioSeleccionado, setEjercicioSeleccionado] = useState(null);
-  const [objetivosParaAgregar, setObjetivosParaAgregar] = useState([]);
-  const [apiErrorFormAgregar, setApiErrorFormAgregar] = useState(null);
+  // Formulario "Agregar ejercicio"
+  const [ejercicioElegido, setEjercicioElegido] = useState(null);
+  const [objetivosNuevoEjercicio, setObjetivosNuevoEjercicio] = useState([]);
+  const [errorAgregar, setErrorAgregar] = useState(null);
 
-  // Estados para inputs CONTROLADOS
-  // Estados Inputs Fuerza (para añadir)
-  const [tipoRepState, setTipoRepState] = useState("rango");
-  const [repsMinState, setRepsMinState] = useState("");
-  const [repsMaxState, setRepsMaxState] = useState("");
-  const [pesoState, setPesoState] = useState("");
-  const [descansoState, setDescansoState] = useState("");
-  // Estados Inputs Cardio (para añadir)
-  const [tiempoCardioState, setTiempoCardioState] = useState("");
-  const [distanciaCardioState, setDistanciaCardioState] = useState("");
-  const [descansoCardioState, setDescansoCardioState] = useState("");
+  // Inputs del formulario
+  const [tipoRepNuevo, setTipoRepNuevo] = useState("rango");
+  const [repsMinNueva, setRepsMinNueva] = useState("");
+  const [repsMaxNueva, setRepsMaxNueva] = useState("");
+  const [pesoNuevo, setPesoNuevo] = useState("");
+  const [descansoNuevo, setDescansoNuevo] = useState("");
+  const [tiempoCardioNuevo, setTiempoCardioNuevo] = useState("");
+  const [distanciaCardioNueva, setDistanciaCardioNueva] = useState("");
+  const [descansoCardioNuevo, setDescansoCardioNuevo] = useState("");
 
+  // Modal "Borrar ejercicio"
+  const [ejercicioBorrar, setEjercicioBorrar] = useState(null);
+  const [modalBorrarEjercicioAbierto, setModalBorrarEjercicioAbierto] = useState(false);
+  const [borrandoEjercicio, setBorrandoEjercicio] = useState(false);
 
-  // Estados Formulario "Editar Rutina Info"
-  const [editedName, setEditedName] = useState('');
-  const [editedDays, setEditedDays] = useState('');
-  const [isEditingInfo, setIsEditingInfo] = useState(false);
-  const [apiErrorFormEditar, setApiErrorFormEditar] = useState(null);
-  const [editedOrden, setEditedOrden] = useState(0);
-  const [editedColor, setEditedColor] = useState("");
-
-  // Constantes y Refs
-  const MAX_TITULO_LENGTH = 38;
-  const MAX_DIAS_LENGTH = 60;
-  const successTimeoutRef = useRef(null);
-  const exerciseSuccessTimeoutRef = useRef(null);
-
-  // Estados Modal "Borrar Ejercicio"
-  const [ejercicioAEliminar, setEjercicioAEliminar] = useState(null);
-  const [isConfirmarBorrarEjercicioOpen, setIsConfirmarBorrarEjercicioOpen] = useState(false);
-  const [isDeletingEjercicio, setIsDeletingEjercicio] = useState(false);
-
-
-  // Handler de validación para el formulario "Añadir"
-  const handleAddFormChange = (e) => {
-    const { name, value } = e.target;
-
-    // Reglas de Regex
-    const max3Int = /^\d{0,3}$/; // Máx 3 dígitos enteros
-    const max4Int = /^\d{0,4}$/; // Máx 4 dígitos enteros
-    const decimal_5_2 = /^(|\d{1,3}([.,]\d{0,2})?)$/; // Máx 999.99 (6 chars total)
-
-    // Limpiar mensajes de error al escribir
-    setApiErrorFormAgregar(null);
-
-    switch (name) {
-      // --- FUERZA ---
-      case 'repsMin':
-        if (max3Int.test(value)) {
-          setRepsMinState(value);
-        }
-        break;
-      case 'repsMax':
-        if (max3Int.test(value)) {
-          setRepsMaxState(value);
-        }
-        break;
-      case 'peso':
-        if (decimal_5_2.test(value) && value.length <= 6) {
-          // Estandariza la coma a un punto
-          setPesoState(value.replace(',', '.'));
-        }
-        break;
-      case 'descanso':
-        if (max4Int.test(value)) {
-          setDescansoState(value);
-        }
-        break;
-
-      // --- CARDIO ---
-      case 'tiempoCardio':
-        if (max4Int.test(value)) {
-          setTiempoCardioState(value);
-        }
-        break;
-      case 'distanciaCardio':
-        if (decimal_5_2.test(value) && value.length <= 6) {
-          setDistanciaCardioState(value.replace(',', '.'));
-        }
-        break;
-      case 'descansoCardio':
-        if (max4Int.test(value)) {
-          setDescansoCardioState(value);
-        }
-        break;
-      default:
-        // Fallback por si acaso
-        break;
+  // Validacion del formulario
+  const manejarCambioFormAgregar = (e) => {
+    const nombre = e.target.name;
+    const valor = e.target.value;
+    setErrorAgregar(null);
+    if (nombre === 'repsMin') {
+      setRepsMinNueva(valor);
+    } else if (nombre === 'repsMax') {
+      setRepsMaxNueva(valor);
+    } else if (nombre === 'peso') {
+      setPesoNuevo(valor);
+    } else if (nombre === 'descanso') {
+      setDescansoNuevo(valor);
+    } else if (nombre === 'tiempoCardio') {
+      setTiempoCardioNuevo(valor);
+    } else if (nombre === 'distanciaCardio') {
+      setDistanciaCardioNueva(valor);
+    } else if (nombre === 'descansoCardio') {
+      setDescansoCardioNuevo(valor);
     }
   };
 
-
-  // Resetea los inputs del formulario de Fuerza
-  const resetFuerzaInputs = () => {
-    setTipoRepState("rango"); setRepsMinState("");
-    setRepsMaxState(""); setPesoState("");
-    setDescansoState("");
+  const resetearInputsFuerza = () => {
+    setTipoRepNuevo("rango"); setRepsMinNueva("");
+    setRepsMaxNueva(""); setPesoNuevo(""); setDescansoNuevo("");
   };
 
-  // Resetea los inputs del formulario de Cardio
-  const resetCardioInputs = () => {
-    setTiempoCardioState("");
-    setDistanciaCardioState(""); setDescansoCardioState("");
+  const resetearInputsCardio = () => {
+    setTiempoCardioNuevo(""); setDistanciaCardioNueva(""); setDescansoCardioNuevo("");
   };
 
-  // Muestra un mensaje temporal de éxito (para rutina o para ejercicio)
-  const showTemporaryMessage = (message, type = 'exercise', duration = 3000) => {
-    setApiErrorFormAgregar(null);
-    setApiErrorFormEditar(null);
-    if (type === 'rutina') {
-      setSuccessMsg(message);
-      if (successTimeoutRef.current) clearTimeout(successTimeoutRef.current);
-      successTimeoutRef.current = setTimeout(() => { setSuccessMsg(null); successTimeoutRef.current = null; }, duration);
+  const formatearObjetivoTabla = (obj, tipo) => {
+    if (tipo === 'cardio') {
+      const metricas = [];
+      if (obj.tiempo_min_objetivo) metricas.push(`${obj.tiempo_min_objetivo} min`);
+      if (obj.distancia_km_objetivo) metricas.push(`${obj.distancia_km_objetivo} km`);
+      let texto = metricas.join(' / ');
+      if (obj.descanso_seg_post) texto += ` (${obj.descanso_seg_post}s)`;
+      return <span><strong>Int. {obj.num_serie}:</strong> {texto || "Objetivo no especificado"}</span>;
+    }
+    let repStr = "";
+    if (obj.tipo_rep_objetivo === 'fallo') {
+      repStr = `Al Fallo (~${obj.reps_min_objetivo || '?'}r)`;
+    } else if (obj.tipo_rep_objetivo === 'rango') {
+      repStr = `${obj.reps_min_objetivo || '?'}-${obj.reps_max_objetivo || '?'}r`;
     } else {
-      setExerciseSuccessMsg(message);
-      if (exerciseSuccessTimeoutRef.current) clearTimeout(exerciseSuccessTimeoutRef.current);
-      exerciseSuccessTimeoutRef.current = setTimeout(() => { setExerciseSuccessMsg(null); exerciseSuccessTimeoutRef.current = null; }, duration);
+      repStr = `${obj.reps_min_objetivo || '?'}r`;
     }
+    return (
+      <span>
+        <strong>S{obj.num_serie}:</strong> {repStr}
+        {obj.peso_kg_objetivo != null ? ` con ${String(obj.peso_kg_objetivo)}kg` : ''}
+        {obj.descanso_seg_post != null ? ` (${String(obj.descanso_seg_post)}s)` : ''}
+      </span>
+    );
   };
 
-  // Limpieza de timeouts al desmontar el componente
-  useEffect(() => {
-    return () => {
-      if (successTimeoutRef.current) clearTimeout(successTimeoutRef.current);
-      if (exerciseSuccessTimeoutRef.current) clearTimeout(exerciseSuccessTimeoutRef.current);
-    };
-  }, []);
-
-  // Efecto para cargar toda la información de la rutina
+  // Cargar datos de la rutina
   useEffect(() => {
     const cargarDatosRutina = async () => {
-      setLoading(true); setError(null); setApiErrorFormAgregar(null); setApiErrorFormEditar(null);
-      setSuccessMsg(null); setExerciseSuccessMsg(null);
-      if (successTimeoutRef.current) clearTimeout(successTimeoutRef.current);
-      if (exerciseSuccessTimeoutRef.current) clearTimeout(exerciseSuccessTimeoutRef.current);
-      const token = localStorage.getItem('movium_token'); if (!token) { setError("Autenticación requerida."); setLoading(false); return; }
+      setCargando(true); setError(null); setErrorAgregar(null); setMensajeOkEjercicio(null);
+      const token = localStorage.getItem('movium_token');
+      if (!token) { setError("Autenticación requerida."); setCargando(false); return; }
       const headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` };
 
       try {
-        // Peticiones en paralelo
-        const resInfo = fetch(`${API_BASE_URL}get_rutina_info.php?id=${rutinaId}`, { headers });
-        const resEjerciciosGuardados = fetch(`${API_BASE_URL}get_ejercicios_de_rutina.php?id=${rutinaId}`, { headers });
-        const resMaestra = fetch(`${API_BASE_URL}get_ejercicios_maestra.php`, { headers });
-
-        const [info, ejerciciosGuardados, maestra] = await Promise.all([resInfo, resEjerciciosGuardados, resMaestra]);
-
+        const info = await fetch(`${API_BASE_URL}get_rutina_info.php?id=${rutinaId}`, { headers });
         const dataInfo = await info.json();
         if (!info.ok) throw new Error(dataInfo.mensaje || "Error info rutina");
 
+        const ejerciciosGuardados = await fetch(`${API_BASE_URL}get_ejercicios_de_rutina.php?id=${rutinaId}`, { headers });
         const dataEjerciciosGuardados = await ejerciciosGuardados.json();
         if (!ejerciciosGuardados.ok) throw new Error(dataEjerciciosGuardados.mensaje || "Error ejercicios guardados");
 
+        const maestra = await fetch(`${API_BASE_URL}get_ejercicios_maestra.php`, { headers });
         const dataMaestra = await maestra.json();
         if (!maestra.ok) throw new Error(dataMaestra.mensaje || "Error maestra");
 
-        setRutinaInfo(dataInfo);
-        setEjerciciosEnRutina(dataEjerciciosGuardados);
-        setEjerciciosMaestra(dataMaestra);
-        // Inicializar estados de edición con los datos cargados
-        setEditedName(dataInfo.nombre);
-        setEditedDays(dataInfo.dias_semana || '');
-        setEditedOrden(dataInfo.orden || 0);
-        setEditedColor(dataInfo.color_tag || "");
+        setInfoRutina(dataInfo);
+        setEjerciciosRutina(dataEjerciciosGuardados);
+        setEjerciciosBase(dataMaestra);
 
       } catch (err) { setError(err.message); }
-      finally { setLoading(false); }
+      finally { setCargando(false); }
     };
     cargarDatosRutina();
   }, [rutinaId]);
 
-  // Envía los datos actualizados de la rutina a la API.
-  const handleUpdateRutinaInfo = async (e) => {
-    e.preventDefault();
-    setApiErrorFormEditar(null);
-    setSuccessMsg(null); setExerciseSuccessMsg(null);
+  const confirmarBorrarRutina = async () => {
+    setBorrandoRutina(true);
     const token = localStorage.getItem('movium_token');
-
-    const body = {
-      id: rutinaId,
-      nombre: editedName,
-      dias_semana: editedDays,
-      orden: editedOrden,
-      color_tag: editedColor
-    };
-
     try {
-      const response = await fetch(`${API_BASE_URL}update_rutina.php`, {
+      const response = await fetch(`${API_BASE_URL}delete_rutina.php`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify(body)
+        body: JSON.stringify({ id: rutinaId })
       });
       const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.mensaje || 'Error al actualizar la rutina.');
-      }
-
-      setRutinaInfo(prevInfo => ({
-        ...prevInfo,
-        ...data.rutina_info
-      }));
-      setEditedName(data.rutina_info.nombre);
-      setEditedDays(data.rutina_info.dias_semana || '');
-      setEditedOrden(data.rutina_info.orden);
-      setEditedColor(data.rutina_info.color_tag || "");
-
-      showTemporaryMessage("Rutina actualizada con éxito.", 'rutina');
-      setIsEditingInfo(false);
-    } catch (err) { setApiErrorFormEditar(err.message); }
-  };
-
-  // Abre el modal de confirmación para borrar la rutina.
-  const handleDeleteRutina = () => { setIsDeleteModalOpen(true); };
-
-  // Confirma y ejecuta el borrado de la rutina completa.
-  const handleConfirmDelete = async () => {
-    setApiErrorFormEditar(null); setIsDeleting(true);
-    const token = localStorage.getItem('movium_token');
-    try {
-      const response = await fetch(`${API_BASE_URL}delete_rutina.php`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ id: rutinaId }) });
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.mensaje || 'Error al eliminar la rutina.');
-      }
-      setIsDeleteModalOpen(false);
-      setIsDeleting(false);
-      setIsEditingInfo(false);
+      if (!response.ok) throw new Error(data.mensaje || 'Error al eliminar la rutina.');
+      setModalBorrarRutinaAbierto(false);
+      setBorrandoRutina(false);
       navigate('/');
     } catch (err) {
-      setApiErrorFormEditar(err.message);
-      setIsDeleteModalOpen(false);
-      setIsDeleting(false);
+      setModalBorrarRutinaAbierto(false);
+      setBorrandoRutina(false);
     }
   };
 
-  // Cancela el modo de edición de la info de la rutina y resetea los valores.
-  const handleCancelEditInfo = () => {
-    setIsEditingInfo(false);
-    setEditedName(rutinaInfo.nombre);
-    setEditedDays(rutinaInfo.dias_semana || '');
-    setEditedOrden(rutinaInfo.orden || 0);
-    setEditedColor(rutinaInfo.color_tag || "");
-    setApiErrorFormEditar(null);
-    setSuccessMsg(null);
-    setExerciseSuccessMsg(null);
+  const seleccionarEjercicio = (ej) => {
+    setEjercicioElegido(ej);
+    setObjetivosNuevoEjercicio([]);
+    setErrorAgregar(null);
+    setModalSelectorAbierto(false);
+    resetearInputsFuerza();
+    resetearInputsCardio();
+    setMensajeOkEjercicio(null);
   };
 
-  // Callback del modal SelectorEjerciciosModal.
-  const handleSelectEjercicio = (ej) => {
-    setEjercicioSeleccionado(ej);
-    setObjetivosParaAgregar([]);
-    setApiErrorFormAgregar(null);
-    setIsSelectorModalOpen(false);
-    resetFuerzaInputs();
-    resetCardioInputs();
-    setSuccessMsg(null);
-    setExerciseSuccessMsg(null);
-  };
+  // Valida los campos del formulario de fuerza y devuelve el objeto de la serie
+  // Tuve que añadir muchas validaciones porque sino se colaban NaN y valores raros
+  const obtenerSerieActual = () => {
+    setErrorAgregar(null);
+    let reps_min = null;
+    let reps_max = null;
 
-  // Valida y obtiene los datos de la serie de fuerza de los inputs.
-  const getCurrentSerieData = () => {
-    setApiErrorFormAgregar(null);
-    let reps_min = null; let reps_max = null;
-
-    if (!repsMinState) {
-      setApiErrorFormAgregar("El campo 'Reps' (o 'Reps Mín') es obligatorio.");
+    if (!repsMinNueva) {
+      setErrorAgregar("El campo 'Reps' es obligatorio.");
       return null;
     }
 
-    if (tipoRepState === 'fijo' || tipoRepState === 'fallo') {
-      const repsParsed = parseInt(repsMinState, 10);
-      if (isNaN(repsParsed) || (tipoRepState === 'fijo' && repsParsed < 1) || (tipoRepState === 'fallo' && repsParsed < 0)) {
-        setApiErrorFormAgregar(`Valor inválido para '${tipoRepState === 'fallo' ? 'Reps Aprox.' : 'Reps'}' (>= ${tipoRepState === 'fallo' ? 0 : 1}).`);
+    if (tipoRepNuevo === 'fijo' || tipoRepNuevo === 'fallo') {
+      reps_min = parseInt(repsMinNueva, 10);
+      // Con fijo minimo 1 rep, con fallo puede ser 0 (no sabes cuántas vas a hacer)
+      if (isNaN(reps_min) || reps_min < 0) {
+        setErrorAgregar("Valor de reps inválido.");
         return null;
       }
-      reps_min = (tipoRepState === 'fallo' && repsMinState === '') ? null : repsParsed;
-
-    } else if (tipoRepState === 'rango') {
-      if (!repsMaxState) {
-        setApiErrorFormAgregar("El campo 'Reps Máx' es obligatorio para el tipo Rango.");
+    } else if (tipoRepNuevo === 'rango') {
+      if (!repsMaxNueva) {
+        setErrorAgregar("El campo 'Reps Máx' es obligatorio para el tipo Rango.");
         return null;
       }
-      const minParsed = parseInt(repsMinState, 10);
-      const maxParsed = parseInt(repsMaxState, 10);
-      if (isNaN(minParsed) || isNaN(maxParsed) || minParsed < 1 || maxParsed < minParsed) {
-        setApiErrorFormAgregar("Las Repeticiones Máximas deber ser mayores o iguales que las Mínimas");
+      reps_min = parseInt(repsMinNueva, 10);
+      reps_max = parseInt(repsMaxNueva, 10);
+      if (isNaN(reps_min) || isNaN(reps_max) || reps_min < 1 || reps_max < reps_min) {
+        setErrorAgregar("Las Repeticiones Máximas deben ser mayores o iguales que las Mínimas.");
         return null;
       }
-      reps_min = minParsed; reps_max = maxParsed;
     }
 
-    if (!pesoState) {
-      setApiErrorFormAgregar("El campo 'Peso' es obligatorio.");
+    if (!pesoNuevo) {
+      setErrorAgregar("El campo 'Peso' es obligatorio.");
       return null;
     }
-    const pesoNum = parseFloat(pesoState);
+    const pesoNum = parseFloat(pesoNuevo);
     if (isNaN(pesoNum) || pesoNum < 0) {
-      setApiErrorFormAgregar("El peso debe ser un número válido (>= 0).");
+      setErrorAgregar("El peso debe ser un número válido.");
       return null;
     }
 
-    const descansoNum = parseInt(descansoState, 10);
-    if (descansoState && (isNaN(descansoNum) || descansoNum < 0)) {
-      setApiErrorFormAgregar("El descanso debe ser un número válido (>= 0) o dejarse vacío.");
-      return null;
-    }
+    // El descanso es opcional, solo se guarda si se ha escrito algo
+    const descansoNum = parseInt(descansoNuevo, 10);
+    const descansoFinal = (descansoNuevo && !isNaN(descansoNum)) ? descansoNum : null;
 
     return {
-      num_serie: objetivosParaAgregar.length + 1, tipo_rep_objetivo: tipoRepState,
-      reps_min_objetivo: reps_min, reps_max_objetivo: reps_max,
+      num_serie: objetivosNuevoEjercicio.length + 1,
+      tipo_rep_objetivo: tipoRepNuevo,
+      reps_min_objetivo: reps_min,
+      reps_max_objetivo: reps_max,
       peso_kg_objetivo: pesoNum,
-      descanso_seg_post: (descansoState && !isNaN(descansoNum)) ? descansoNum : null,
-      tiempo_min_objetivo: null, distancia_km_objetivo: null
+      descanso_seg_post: descansoFinal,
+      // estos campos son de cardio, en fuerza no se usan pero el backend los espera
+      tiempo_min_objetivo: null,
+      distancia_km_objetivo: null
     };
   };
 
-  // Añade la serie validada a la lista temporal 'objetivosParaAgregar'.
-  const handleAddSerieToList = () => {
-    const serieData = getCurrentSerieData();
-    if (serieData) {
-      setObjetivosParaAgregar(prev => [...prev, serieData]);
-      // --- ¡CAMBIO! No reseteamos los inputs ---
-      // resetFuerzaInputs(); 
-    }
+  const agregarSerieLista = () => {
+    const serieData = obtenerSerieActual();
+    if (serieData) setObjetivosNuevoEjercicio(prev => [...prev, serieData]);
   };
 
-  // Valida y obtiene los datos del intervalo de cardio de los inputs.
-  const getCurrentIntervaloData = () => {
-    setApiErrorFormAgregar(null);
-    if (!tiempoCardioState) {
-      setApiErrorFormAgregar("El campo 'Tiempo' es obligatorio.");
+  // Igual que obtenerSerieActual pero para cardio (tiempo y distancia en vez de reps y peso)
+  const obtenerIntervaloActual = () => {
+    setErrorAgregar(null);
+
+    if (!tiempoCardioNuevo) {
+      setErrorAgregar("El campo 'Tiempo' es obligatorio.");
       return null;
     }
-    const tiempoNum = parseInt(tiempoCardioState, 10);
+    const tiempoNum = parseInt(tiempoCardioNuevo, 10);
     if (isNaN(tiempoNum) || tiempoNum <= 0) {
-      setApiErrorFormAgregar("El Tiempo debe ser un número válido mayor que 0.");
+      setErrorAgregar("El Tiempo debe ser mayor que 0.");
       return null;
     }
 
-    if (!distanciaCardioState) {
-      setApiErrorFormAgregar("El campo 'Distancia' es obligatorio.");
+    if (!distanciaCardioNueva) {
+      setErrorAgregar("El campo 'Distancia' es obligatorio.");
       return null;
     }
-    const distNum = parseFloat(distanciaCardioState);
+    const distNum = parseFloat(distanciaCardioNueva);
     if (isNaN(distNum) || distNum <= 0) {
-      setApiErrorFormAgregar("La Distancia debe ser un número válido mayor que 0.");
+      setErrorAgregar("La Distancia debe ser mayor que 0.");
       return null;
     }
 
-    const descansoNum = parseInt(descansoCardioState, 10);
-    if (descansoCardioState && (isNaN(descansoNum) || descansoNum < 0)) {
-      setApiErrorFormAgregar("El descanso debe ser un número válido (>= 0) o dejarse vacío.");
-      return null;
-    }
-
+    const descansoNum = parseInt(descansoCardioNuevo, 10);
     return {
-      num_serie: objetivosParaAgregar.length + 1, tipo_rep_objetivo: 'fijo',
-      reps_min_objetivo: null, reps_max_objetivo: null, peso_kg_objetivo: null,
-      tiempo_min_objetivo: tiempoNum, distancia_km_objetivo: distNum,
-      descanso_seg_post: (descansoCardioState && !isNaN(descansoNum)) ? descansoNum : null
+      num_serie: objetivosNuevoEjercicio.length + 1,
+      tipo_rep_objetivo: 'fijo',
+      // los campos de fuerza no aplican aqui
+      reps_min_objetivo: null,
+      reps_max_objetivo: null,
+      peso_kg_objetivo: null,
+      tiempo_min_objetivo: tiempoNum,
+      distancia_km_objetivo: distNum,
+      descanso_seg_post: (descansoCardioNuevo && !isNaN(descansoNum)) ? descansoNum : null
     };
   };
 
-  // Añade el intervalo validado a la lista temporal 'objetivosParaAgregar'.
-  const handleAddIntervaloToList = () => {
-    const intervaloData = getCurrentIntervaloData();
-    if (intervaloData) {
-      setObjetivosParaAgregar(prev => [...prev, intervaloData]);
-      // --- ¡CAMBIO! No reseteamos los inputs ---
-      // resetCardioInputs();
-    }
+  const agregarIntervaloLista = () => {
+    const intervaloData = obtenerIntervaloActual();
+    if (intervaloData) setObjetivosNuevoEjercicio(prev => [...prev, intervaloData]);
   };
 
-  // Envía el nuevo ejercicio a la API para guardarlo.
-  const handleAgregarEjercicio = async (e) => {
+  const guardarEjercicio = async (e) => {
     e.preventDefault();
-    setApiErrorFormAgregar(null);
-    setSuccessMsg(null); setExerciseSuccessMsg(null);
+    setErrorAgregar(null); setMensajeOkEjercicio(null);
     const token = localStorage.getItem('movium_token');
-    if (!ejercicioSeleccionado) { setApiErrorFormAgregar("Selecciona un ejercicio."); return; }
-
-    const objetivosFinales = objetivosParaAgregar;
-
-    if (objetivosFinales.length === 0) {
-      setApiErrorFormAgregar(`Añade al menos un${ejercicioSeleccionado.tipo === 'cardio' ? ' intervalo' : 'a serie'} antes de guardar.`);
+    if (!ejercicioElegido) { setErrorAgregar("Selecciona un ejercicio."); return; }
+    if (objetivosNuevoEjercicio.length === 0) {
+      setErrorAgregar(`Añade al menos un${ejercicioElegido.tipo === 'cardio' ? ' intervalo' : 'a serie'} antes de guardar.`);
       return;
     }
 
-    const nuevoEjercicioRutina = { rutina_id: rutinaId, ejercicio_id: ejercicioSeleccionado.id, objetivos: objetivosFinales };
+    const nuevoEjercicioRutina = { rutina_id: rutinaId, ejercicio_id: ejercicioElegido.id, objetivos: objetivosNuevoEjercicio };
     try {
-      const response = await fetch(`${API_BASE_URL}add_ejercicio_a_rutina.php`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(nuevoEjercicioRutina) });
+      const response = await fetch(`${API_BASE_URL}add_ejercicio_a_rutina.php`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify(nuevoEjercicioRutina)
+      });
       const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.mensaje || 'Error al añadir el ejercicio a la rutina.');
-      }
-
-      setEjerciciosEnRutina(prev => [...prev, data.ejercicio_agregado]);
-      setEjercicioSeleccionado(null);
-      setObjetivosParaAgregar([]);
-      resetFuerzaInputs();
-      resetCardioInputs();
-      showTemporaryMessage("Ejercicio añadido con éxito.", 'exercise');
-    } catch (err) { setApiErrorFormAgregar(`Error al guardar: ${err.message}`); }
+      if (!response.ok) throw new Error(data.mensaje || 'Error al añadir el ejercicio.');
+      setEjerciciosRutina(prev => [...prev, data.ejercicio_agregado]);
+      setEjercicioElegido(null);
+      setObjetivosNuevoEjercicio([]);
+      resetearInputsFuerza();
+      resetearInputsCardio();
+      setMensajeOkEjercicio("Ejercicio añadido con éxito.");
+      setTimeout(() => setMensajeOkEjercicio(null), 3000);
+    } catch (err) { setErrorAgregar(`Error al guardar: ${err.message}`); }
   };
 
-  // Abre el modal para confirmar el borrado de un ejercicio
-  const handleBorrarEjercicio = (ejercicio) => {
-    setApiErrorFormAgregar(null);
-    setSuccessMsg(null);
-    setExerciseSuccessMsg(null);
-    setEjercicioAEliminar({ id: ejercicio.id, nombre: ejercicio.nombre_ejercicio });
-    setIsConfirmarBorrarEjercicioOpen(true);
+  const abrirBorrarEjercicio = (ejercicio) => {
+    setErrorAgregar(null); setMensajeOkEjercicio(null);
+    setEjercicioBorrar({ id: ejercicio.id, nombre: ejercicio.nombre_ejercicio });
+    setModalBorrarEjercicioAbierto(true);
   };
 
-  // Confirma y ejecuta el borrado del ejercicio de la rutina.
-  const handleConfirmarBorrarEjercicio = async () => {
-    if (!ejercicioAEliminar) return;
-    setApiErrorFormAgregar(null);
-    setIsDeletingEjercicio(true);
+  const confirmarBorrarEjercicio = async () => {
+    if (!ejercicioBorrar) return;
+    setErrorAgregar(null); setBorrandoEjercicio(true);
     const token = localStorage.getItem('movium_token');
     try {
       const response = await fetch(`${API_BASE_URL}delete_ejercicio_de_rutina.php`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify({ id: ejercicioAEliminar.id })
+        body: JSON.stringify({ id: ejercicioBorrar.id })
       });
       const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.mensaje || 'Error al borrar el ejercicio');
-      }
-      setEjerciciosEnRutina(data.ejercicios_actualizados);
-      showTemporaryMessage("Ejercicio borrado.", 'exercise');
+      if (!response.ok) throw new Error(data.mensaje || 'Error al borrar el ejercicio');
+      setEjerciciosRutina(data.ejercicios_actualizados);
+      setMensajeOkEjercicio("Ejercicio borrado.");
+      setTimeout(() => setMensajeOkEjercicio(null), 3000);
     } catch (err) {
-      setApiErrorFormAgregar(err.message);
+      setErrorAgregar(err.message);
     } finally {
-      setIsConfirmarBorrarEjercicioOpen(false);
-      setIsDeletingEjercicio(false);
-      setEjercicioAEliminar(null);
+      setModalBorrarEjercicioAbierto(false);
+      setBorrandoEjercicio(false);
+      setEjercicioBorrar(null);
     }
   };
 
-  // Callback del modal EditarEjercicioModal.
-  const handleGuardarCambios = async (datosEjercicio, setModalError) => {
-    const token = localStorage.getItem('movium_token');
-    setSuccessMsg(null); setExerciseSuccessMsg(null);
-    try {
-      const response = await fetch(`${API_BASE_URL}update_ejercicio_en_rutina.php`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(datosEjercicio) });
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.mensaje || 'Error al guardar cambios');
-      }
-
-      setEjerciciosEnRutina(data.ejercicios_actualizados);
-      setEjercicioParaEditar(null); // Cierra el modal
-      showTemporaryMessage("Ejercicio actualizado.", 'exercise');
-    } catch (err) { setModalError(err.message); } // Muestra el error DENTRO del modal
-  };
-
-  // Renderizado de Carga
-  if (loading) return <div className="rutina-detalle-container"><p className="subtitle">Cargando...</p></div>;
-
-  // Renderizado de Error
+  if (cargando) return <div className="rutina-detalle-container"><p className="subtitle">Cargando...</p></div>;
   if (error) return (<div className="rutina-detalle-container"><button className="btn-volver" onClick={() => navigate('/')}>&larr; Volver</button><div className="message">{error}</div></div>);
+  if (!infoRutina) return <div className="rutina-detalle-container"><p className="subtitle">Rutina no encontrada.</p></div>;
 
-  // Renderizado de Rutina no encontrada
-  if (!rutinaInfo) return <div className="rutina-detalle-container"><p className="subtitle">Rutina no encontrada.</p></div>;
-
-  // Renderizado Principal
   return (
     <>
       <div className="rutina-detalle-container">
 
         <button className="btn-volver" onClick={() => navigate('/')}>&larr; Volver</button>
 
-        {/* --- Cabecera (Modo Vista o Modo Edición) --- */}
-        {!isEditingInfo ? (
-          // Modo Vista
-          <div style={{ position: 'relative', marginBottom: '1rem' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '0.5rem', gap: '10px' }}>
-              <img src={iconoCrear} alt="" width="64" height="64" /> <h2>{rutinaInfo.nombre}</h2>
-            </div>
-            <p className="subtitle" style={{ textAlign: 'center' }}>{rutinaInfo.dias_semana || "Añade o edita los ejercicios para este día."}</p>
-            <button className="btn-edit-info" style={{ top: '0', right: '0' }} onClick={() => { setIsEditingInfo(true); setSuccessMsg(null); setExerciseSuccessMsg(null); setApiErrorFormEditar(null); }} title="Editar nombre y días">✏️</button>
-
-            {successMsg && !apiErrorFormEditar && <div className="message success" style={{ marginTop: '1rem' }}>{successMsg}</div>}
+        <div style={{ position: 'relative', marginBottom: '1rem' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '0.5rem', gap: '10px' }}>
+            <img src={iconoCrear} alt="" width="64" height="64" />
+            <h2>{infoRutina.nombre}</h2>
           </div>
-        ) : (
-          // Modo Edición (Formulario para info de la rutina)
-          <form className="form-editar-rutina-inline" onSubmit={handleUpdateRutinaInfo}>
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '1.5rem', gap: '10px' }}>
-              <img src={iconoCrear} alt="" width="64" height="64" /> <h3>Configuración de la Rutina</h3>
-            </div>
-            {apiErrorFormEditar && <div className="message">{apiErrorFormEditar}</div>}
+          <p className="subtitle" style={{ textAlign: 'center' }}>{infoRutina.dias_semana || "Añade o edita los ejercicios para este día."}</p>
+          <button
+            className="btn-delete-rutina-inline"
+            style={{ marginTop: '0.5rem', display: 'block', marginLeft: 'auto', marginRight: 'auto' }}
+            onClick={() => setModalBorrarRutinaAbierto(true)}
+          >
+            Eliminar Rutina
+          </button>
+        </div>
 
-            <div className="form-grid">
-              <div className="form-group-small" style={{ gridColumn: 'span 2' }}>
-                <label htmlFor="editedName">Nombre</label>
-                <input type="text" id="editedName" value={editedName} onChange={(e) => { setEditedName(e.target.value); setSuccessMsg(null); }} required maxLength={MAX_TITULO_LENGTH} />
-                <small className="char-counter">
-                  {editedName.length} / {MAX_TITULO_LENGTH}
-                </small>
-              </div>
-              <div className="form-group-small" style={{ gridColumn: 'span 2' }}>
-                <label htmlFor="editedDays">Días / Descripción</label>
-                <input type="text" id="editedDays" value={editedDays} onChange={(e) => { setEditedDays(e.target.value); setSuccessMsg(null); }} placeholder="Ej: Lunes, Jueves" maxLength={MAX_DIAS_LENGTH} />
-                <small className="char-counter">
-                  {editedDays.length} / {MAX_DIAS_LENGTH}
-                </small>
-              </div>
-
-              {/* Selector para el orden */}
-              <div className="form-group-small">
-                <label htmlFor="editedOrden">Orden en Inicio</label>
-                <select
-                  id="editedOrden"
-                  value={editedOrden}
-                  onChange={(e) => setEditedOrden(e.target.value)}
-                  required
-                >
-                  {rutinaInfo && rutinaInfo.max_orden_disponible &&
-                    Array.from({ length: rutinaInfo.max_orden_disponible }, (_, i) => i + 1)
-                      .map(numero => (
-                        <option key={numero} value={numero}>
-                          {numero}
-                        </option>
-                      ))
-                  }
-                  {(!rutinaInfo || !rutinaInfo.max_orden_disponible) && (
-                    <option value={editedOrden || 1}>{editedOrden || 1}</option>
-                  )}
-                </select>
-              </div>
-
-              {/* Selector de color */}
-              <div className="form-group-small">
-                <label htmlFor="editedColor">Color de Tarjeta</label>
-                <div className="color-input-container">
-                  <input
-                    type="color"
-                    id="editedColor"
-                    value={editedColor || "#000000"}
-                    onChange={(e) => setEditedColor(e.target.value)}
-                  />
-                  <button
-                    type="button"
-                    className="btn-cancel-inline"
-                    onClick={() => setEditedColor("")}
-                    title="Quitar color"
-                  >
-                    Quitar
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Acciones del formulario de edición de rutina */}
-            <div className="form-actions-rutina-inline">
-              <button type="button" className="btn-delete-rutina-inline" onClick={handleDeleteRutina}>Eliminar Rutina</button>
-              <div className="form-actions-rutina-inline-right">
-                <button type="button" className="btn-cancel-inline" onClick={handleCancelEditInfo}>Cancelar</button>
-                <button type="submit" className="transparent-btn-inline">Guardar</button>
-              </div>
-            </div>
-          </form>
-        )}
-
-        {/* --- Formulario de Añadir Ejercicio --- */}
-        <form className="form-agregar-ejercicio" onSubmit={handleAgregarEjercicio}>
+        {/* Formulario de agregar ejercicio */}
+        <form className="form-agregar-ejercicio" onSubmit={guardarEjercicio}>
           <h3>Añadir Ejercicio</h3>
           <div className="form-grid">
             <div className="form-group-select" style={{ gridColumn: '1 / -1' }}>
               <label>Ejercicio</label>
-              <button
-                type="button"
-                className="select-ejercicio-btn"
-                onClick={() => setIsSelectorModalOpen(true)}
-              >
-                {ejercicioSeleccionado
-                  ? `${ejercicioSeleccionado.nombre} (${ejercicioSeleccionado.tipo})`
-                  : "-- Selecciona --"}
+              <button type="button" className="select-ejercicio-btn" onClick={() => setModalSelectorAbierto(true)}>
+                {ejercicioElegido ? `${ejercicioElegido.nombre} (${ejercicioElegido.tipo})` : "-- Selecciona --"}
               </button>
             </div>
 
-            {/* Renderiza el formulario de Fuerza o Cardio según el ejercicio seleccionado */}
-            {!ejercicioSeleccionado ?
-              (
-                <p className="subtitle" style={{ gridColumn: '1 / -1', textAlign: 'center' }}>Selecciona un ejercicio para añadir series o intervalos.</p>
-              ) : ejercicioSeleccionado.tipo === 'cardio' ?
-                (
-                  <FormularioCardio
-                    objetivos={objetivosParaAgregar} setObjetivos={setObjetivosParaAgregar}
-                    tiempo={tiempoCardioState}
-                    distancia={distanciaCardioState}
-                    descanso={descansoCardioState}
-                    onFormChange={handleAddFormChange} // <-- Pasa el handler
-                  />
-                ) : (
-                  <FormularioFuerza
-                    objetivos={objetivosParaAgregar} setObjetivos={setObjetivosParaAgregar}
-                    tipoRep={tipoRepState} setTipoRep={setTipoRepState}
-                    repsMin={repsMinState}
-                    repsMax={repsMaxState}
-                    peso={pesoState}
-                    descanso={descansoState}
-                    onFormChange={handleAddFormChange} // <-- Pasa el handler
-                  />
-                )}
+            {!ejercicioElegido ? (
+              <p className="subtitle" style={{ gridColumn: '1 / -1', textAlign: 'center' }}>Selecciona un ejercicio para añadir series o intervalos.</p>
+            ) : ejercicioElegido.tipo === 'cardio' ? (
+              <FormularioCardio
+                objetivos={objetivosNuevoEjercicio} setObjetivos={setObjetivosNuevoEjercicio}
+                tiempo={tiempoCardioNuevo} distancia={distanciaCardioNueva} descanso={descansoCardioNuevo}
+                onFormChange={manejarCambioFormAgregar}
+              />
+            ) : (
+              <FormularioFuerza
+                objetivos={objetivosNuevoEjercicio} setObjetivos={setObjetivosNuevoEjercicio}
+                tipoRep={tipoRepNuevo} setTipoRep={setTipoRepNuevo}
+                repsMin={repsMinNueva} repsMax={repsMaxNueva} peso={pesoNuevo} descanso={descansoNuevo}
+                onFormChange={manejarCambioFormAgregar}
+              />
+            )}
           </div>
 
-          {/* Botones de acción para añadir series/intervalos y guardar el ejercicio completo */}
-          {ejercicioSeleccionado && (
+          {ejercicioElegido && (
             <div className="form-actions-right">
-              {objetivosParaAgregar.length > 0 && (
+              {objetivosNuevoEjercicio.length > 0 && (
                 <button type="submit" className="transparent-btn">
                   Guardar Ejercicio en Rutina
-                  {` (${objetivosParaAgregar.length} ${objetivosParaAgregar.length > 1
-                    ? (ejercicioSeleccionado.tipo === 'cardio' ? 'intervalos' : 'series')
-                    : (ejercicioSeleccionado.tipo === 'cardio' ? 'intervalo' : 'serie')})`}
+                  {` (${objetivosNuevoEjercicio.length} ${objetivosNuevoEjercicio.length > 1
+                    ? (ejercicioElegido.tipo === 'cardio' ? 'intervalos' : 'series')
+                    : (ejercicioElegido.tipo === 'cardio' ? 'intervalo' : 'serie')})`}
                 </button>
               )}
               <button
                 type="button"
-                onClick={ejercicioSeleccionado.tipo === 'cardio'
-                  ? handleAddIntervaloToList
-                  : handleAddSerieToList}
+                onClick={ejercicioElegido.tipo === 'cardio' ? agregarIntervaloLista : agregarSerieLista}
                 className="btn-add-serie"
               >
-                {ejercicioSeleccionado.tipo === 'cardio'
-                  ? 'Añadir Intervalo'
-                  : 'Añadir Serie'}
+                {ejercicioElegido.tipo === 'cardio' ? 'Añadir Intervalo' : 'Añadir Serie'}
               </button>
             </div>
           )}
         </form>
 
-        {/* --- Bloque de Mensajes (Errores o Éxito) --- */}
         <div style={{ marginTop: '1rem', marginBottom: '1rem' }}>
-          {apiErrorFormAgregar && <div className="message">{apiErrorFormAgregar}</div>}
-          {exerciseSuccessMsg && !isEditingInfo && <div className="message success">{exerciseSuccessMsg}</div>}
+          {errorAgregar && <div className="message">{errorAgregar}</div>}
+          {mensajeOkEjercicio && <div className="message success">{mensajeOkEjercicio}</div>}
         </div>
 
-        {/* --- Lista de Ejercicios Guardados en la Rutina --- */}
+        {/* Lista de Ejercicios en la Rutina */}
         <div className="lista-ejercicios">
           <h3>Ejercicios en esta Rutina</h3>
-          {ejerciciosEnRutina.length === 0 ?
-            (
-              <p className="no-rutinas-msg">Aún no has añadido ejercicios.</p>
-            ) : (
-              <div className="table-container">
-                <table>
-                  <thead><tr><th>Orden</th><th>Ejercicio</th><th>Detalle</th><th>Acciones</th></tr></thead>
-                  <tbody>
-                    {/* Ordena los ejercicios por su campo 'orden' antes de mapearlos */}
-                    {ejerciciosEnRutina.sort((a, b) => a.orden - b.orden).map(ej => (
-                      <tr key={ej.id}>
-                        <td>{ej.orden}</td>
-                        <td><strong>{ej.nombre_ejercicio}</strong> <small>({ej.tipo})</small></td>
-                        <td className="cell-objetivos">
-                          {ej.objetivos.length === 0 ? <small>Sin objetivos</small> : (
-                            <ul>
-                              {/* Ordena las series/intervalos por su 'num_serie' */}
-                              {ej.objetivos.sort((a, b) => a.num_serie - b.num_serie).map(obj => (
-                                <li key={obj.id || obj.num_serie}>
-                                  {formatObjetivoTabla(obj, ej.tipo)}
-                                </li>
-                              ))}
-                            </ul>)}
-                        </td>
-                        <td>
-                          <div className="acciones-tabla">
-                            <button className="btn-edit-small" onClick={() => {
-                              setEjercicioParaEditar(ej);
-                              setSuccessMsg(null); setExerciseSuccessMsg(null); setApiErrorFormAgregar(null);
-                            }}>Editar</button>
-                            <button className="btn-delete-small" onClick={() => handleBorrarEjercicio(ej)}>Borrar</button>
-                          </div>
-                        </td>
-                      </tr>))}
-                  </tbody>
-                </table>
-              </div>
-            )}
+          {ejerciciosRutina.length === 0 ? (
+            <p className="no-rutinas-msg">Aún no has añadido ejercicios.</p>
+          ) : (
+            <div className="table-container">
+              <table>
+                <thead>
+                  <tr><th>Orden</th><th>Ejercicio</th><th>Detalle</th><th>Acciones</th></tr>
+                </thead>
+                <tbody>
+                  {ejerciciosRutina.sort((a, b) => a.orden - b.orden).map(ej => (
+                    <tr key={ej.id}>
+                      <td>{ej.orden}</td>
+                      <td><strong>{ej.nombre_ejercicio}</strong> <small>({ej.tipo})</small></td>
+                      <td className="cell-objetivos">
+                        {ej.objetivos.length === 0 ? <small>Sin objetivos</small> : (
+                          <ul>
+                            {ej.objetivos.sort((a, b) => a.num_serie - b.num_serie).map(obj => (
+                              <li key={obj.id || obj.num_serie}>
+                                {formatearObjetivoTabla(obj, ej.tipo)}
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </td>
+                      <td>
+                        <div className="acciones-tabla">
+                          <button className="btn-delete-small" onClick={() => abrirBorrarEjercicio(ej)}>Borrar</button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
 
-      </div> {/* Fin rutina-detalle-container */}
+      </div>
 
-      {/* --- Modales --- */}
+      {/* Modales */}
       <SelectorEjerciciosModal
-        isOpen={isSelectorModalOpen}
-        onClose={() => {
-          setIsSelectorModalOpen(false);
-          setSuccessMsg(null); setExerciseSuccessMsg(null);
-        }}
-        listaEjercicios={ejerciciosMaestra}
-        onEjercicioSelect={handleSelectEjercicio}
-      />
-
-      <EditarEjercicioModal
-        isOpen={ejercicioParaEditar !== null}
-        onClose={() => {
-          setEjercicioParaEditar(null);
-          setApiErrorFormAgregar(null); setSuccessMsg(null); setExerciseSuccessMsg(null);
-        }}
-        ejercicio={ejercicioParaEditar}
-        onGuardar={handleGuardarCambios}
-        // Pasa el número total de ejercicios (para el selector de orden)
-        maxOrden={ejerciciosEnRutina.length}
+        isOpen={modalSelectorAbierto}
+        onClose={() => setModalSelectorAbierto(false)}
+        listaEjercicios={ejerciciosBase}
+        onEjercicioSelect={seleccionarEjercicio}
       />
 
       <ConfirmarBorradoModal
-        isOpen={isDeleteModalOpen}
-        onClose={() => setIsDeleteModalOpen(false)}
-        onConfirm={handleConfirmDelete}
-        rutinaNombre={rutinaInfo ? rutinaInfo.nombre : ""}
-        isDeleting={isDeleting}
+        isOpen={modalBorrarRutinaAbierto}
+        onClose={() => setModalBorrarRutinaAbierto(false)}
+        onConfirm={confirmarBorrarRutina}
+        rutinaNombre={infoRutina ? infoRutina.nombre : ""}
+        isDeleting={borrandoRutina}
       />
 
       <ConfirmarBorrarEjercicioModal
-        isOpen={isConfirmarBorrarEjercicioOpen}
-        onClose={() => {
-          setIsConfirmarBorrarEjercicioOpen(false);
-          setEjercicioAEliminar(null);
-        }}
-        onConfirm={handleConfirmarBorrarEjercicio}
-        ejercicioNombre={ejercicioAEliminar ? ejercicioAEliminar.nombre : ""}
-        isDeleting={isDeletingEjercicio}
+        isOpen={modalBorrarEjercicioAbierto}
+        onClose={() => { setModalBorrarEjercicioAbierto(false); setEjercicioBorrar(null); }}
+        onConfirm={confirmarBorrarEjercicio}
+        ejercicioNombre={ejercicioBorrar ? ejercicioBorrar.nombre : ""}
+        isDeleting={borrandoEjercicio}
       />
-
     </>
   );
 }

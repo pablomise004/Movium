@@ -1,6 +1,7 @@
 <?php
-// ---- backend/api/add_ejercicio_a_rutina.php (REESCRITO V6.0) ----
+// Anadir ejercicio a una rutina
 
+// Cabeceras para peticiones desde el frontend
 header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json; charset=UTF-8");
 header("Access-Control-Allow-Methods: POST, OPTIONS");
@@ -10,149 +11,133 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-require_once '../config/database.php';
+// Cargar conexion y JWT
+require_once '../config/base_de_datos.php';
 require_once '../vendor/autoload.php';
+require_once '../config/configuracion_jwt.php';
 use \Firebase\JWT\JWT;
 use \Firebase\JWT\Key;
 
-// --- PASO 1: Validación de Token (Sin cambios) ---
-$secret_key = "k#f9JLz@p7W!bN8^vG2*qR5sT&eD4hX%uY1aC6oP3zM0xQñ";
-$jwt = null;
-$authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? null;
-$usuario_id = null;
-if ($authHeader) {
-    $arr = explode(" ", $authHeader);
-    $jwt = $arr[1] ?? null;
+// Validar token y extraer usuario
+$clave_secreta = JWT_SECRET;
+$token = null;
+$cabecera = $_SERVER['HTTP_AUTHORIZATION'] ?? null;
+$id_usuario = null;
+if ($cabecera) {
+    $partes = explode(" ", $cabecera);
+    $token = $partes[1] ?? null;
 }
-if ($jwt) {
+if ($token) {
     try {
-        $decoded = JWT::decode($jwt, new Key($secret_key, 'HS256'));
-        $usuario_id = $decoded->data->id;
-    } catch (Exception $e) { http_response_code(401); echo json_encode(array("mensaje" => "Acceso denegado. Token inválido.")); die(); }
-} else { http_response_code(401); echo json_encode(array("mensaje" => "Acceso denegado. No se proporcionó token.")); die(); }
+        $decodificado = JWT::decode($token, new Key($clave_secreta, 'HS256'));
+        $id_usuario = $decodificado->data->id;
+    } catch (Exception $e) {
+        http_response_code(401);
+        echo json_encode(array("mensaje" => "Acceso denegado. Token inválido."));
+        die();
+    }
+} else {
+    http_response_code(401);
+    echo json_encode(array("mensaje" => "Acceso denegado. No se proporcionó token."));
+    die();
+}
 
-// --- PASO 2: Obtener Datos (Sin cambios) ---
-$data = json_decode(file_get_contents("php://input"));
+// Leer datos JSON
+$datos = json_decode(file_get_contents("php://input"));
 if (
-    empty($data->rutina_id) ||
-    empty($data->ejercicio_id) ||
-    !isset($data->objetivos) || 
-    !is_array($data->objetivos)
+    empty($datos->rutina_id) ||
+    empty($datos->ejercicio_id) ||
+    !isset($datos->objetivos) ||
+    !is_array($datos->objetivos)
 ) {
     http_response_code(400);
     echo json_encode(array("mensaje" => "Datos incompletos. Se requiere 'rutina_id', 'ejercicio_id' y un array 'objetivos'."));
     die();
 }
 
-$rutina_id = $data->rutina_id;
-$ejercicio_id = $data->ejercicio_id;
-$objetivos = $data->objetivos; 
+$id_rutina = (int)$datos->rutina_id;
+$id_ejercicio = (int)$datos->ejercicio_id;
+$objetivos = $datos->objetivos;
 
-// --- PASO 3: Lógica de Inserción (Transacción) ---
-$database = new Database();
-$db = $database->getConnection();
+// Guardar en base de datos (con transaccion)
+$bd = new Database();
+$conexion = $bd->getConnection();
 
 try {
-    $db->beginTransaction();
-
-    // 1. Comprobación de dueño (Sin cambios)
-    $check_query = "SELECT usuario_id FROM rutinas WHERE id = :rutina_id LIMIT 1";
-    $stmt_check = $db->prepare($check_query);
-    $stmt_check->bindParam(":rutina_id", $rutina_id, PDO::PARAM_INT);
-    $stmt_check->execute();
-    $rutina_owner = $stmt_check->fetch(PDO::FETCH_ASSOC);
-    if (!$rutina_owner || $rutina_owner['usuario_id'] != $usuario_id) {
+    // Verificar que la rutina es del usuario
+    $consulta_dueno = "SELECT usuario_id FROM rutinas WHERE id = :rutina_id LIMIT 1";
+    $stmt_dueno = $conexion->prepare($consulta_dueno);
+    $stmt_dueno->bindParam(":rutina_id", $id_rutina, PDO::PARAM_INT);
+    $stmt_dueno->execute();
+    $dueno = $stmt_dueno->fetch(PDO::FETCH_ASSOC);
+    if (!$dueno || $dueno['usuario_id'] != $id_usuario) {
         throw new Exception("Acción no permitida. No eres el dueño de esta rutina.", 403);
     }
     
-    // 2. Calcular 'orden' (Sin cambios)
-    $query_orden = "SELECT MAX(orden) as max_orden FROM rutina_ejercicios WHERE rutina_id = :rutina_id";
-    $stmt_orden = $db->prepare($query_orden);
-    $stmt_orden->bindParam(":rutina_id", $rutina_id);
-    $stmt_orden->execute();
-    $resultado_orden = $stmt_orden->fetch(PDO::FETCH_ASSOC);
-    $orden = ($resultado_orden['max_orden'] ?? 0) + 1;
+    // La columna 'orden' no existe en rutina_ejercicios, insertamos sin ella
+    // Si en el futuro se anade la columna orden a la BD, descomentar el bloque de abajo
+    // $consulta_orden = "SELECT MAX(orden) as max_orden FROM rutina_ejercicios WHERE rutina_id = :rutina_id";
+    // $stmt_orden = $conexion->prepare($consulta_orden);
+    // $stmt_orden->bindParam(":rutina_id", $id_rutina, PDO::PARAM_INT);
+    // $stmt_orden->execute();
+    // $fila_orden = $stmt_orden->fetch(PDO::FETCH_ASSOC);
+    // $orden = ((int)($fila_orden['max_orden'] ?? 0)) + 1;
 
-    // 3. INSERTAR en `rutina_ejercicios` (Sin cambios)
-    $query_padre = "INSERT INTO rutina_ejercicios (rutina_id, ejercicio_id, orden) 
-                    VALUES (:rutina_id, :ejercicio_id, :orden)";
-    $stmt_padre = $db->prepare($query_padre);
-    $stmt_padre->bindParam(":rutina_id", $rutina_id);
-    $stmt_padre->bindParam(":ejercicio_id", $ejercicio_id);
-    $stmt_padre->bindParam(":orden", $orden);
+    // Insertar en rutina_ejercicios (sin orden por ahora)
+    $consulta_padre = "INSERT INTO rutina_ejercicios (rutina_id, ejercicio_id) VALUES (:rutina_id, :ejercicio_id)";
+    $stmt_padre = $conexion->prepare($consulta_padre);
+    $stmt_padre->bindParam(":rutina_id", $id_rutina, PDO::PARAM_INT);
+    $stmt_padre->bindParam(":ejercicio_id", $id_ejercicio, PDO::PARAM_INT);
     $stmt_padre->execute();
 
-    // 4. Obtener ID (Sin cambios)
-    $rutina_ejercicio_id = $db->lastInsertId();
+    $id_rutina_ejercicio = $conexion->lastInsertId();
 
-    // 5. INSERTAR objetivos en `rutina_objetivos` (¡¡CAMBIOS V6.0 AQUÍ!!)
+    // Insertar objetivos
     if (count($objetivos) > 0) {
+        $consulta_hijo = "INSERT INTO rutina_objetivos 
+                            (rutina_ejercicio_id, num_serie, 
+                             tipo_rep_objetivo, reps_min_objetivo, reps_max_objetivo, 
+                             peso_kg_objetivo, 
+                             tiempo_min_objetivo, distancia_km_objetivo,
+                             descanso_seg_post) 
+                           VALUES 
+                            (:re_id, :num_serie, 
+                             :tipo_rep, :reps_min, :reps_max, 
+                             :peso, :tiempo, :dist, :desc)";
         
-        // ¡Consulta actualizada a V6.0!
-        $query_hijo = "INSERT INTO rutina_objetivos 
-                        (rutina_ejercicio_id, num_serie, 
-                         /* --- CAMPOS V6.0 --- */
-                         tipo_rep_objetivo, reps_min_objetivo, reps_max_objetivo, 
-                         /* ----------------- */
-                         peso_kg_objetivo, 
-                         tiempo_min_objetivo, distancia_km_objetivo,
-                         descanso_seg_post) 
-                       VALUES 
-                        (:re_id, :num_serie, 
-                         /* --- PARAMS V6.0 --- */
-                         :tipo_rep, :reps_min, :reps_max, 
-                         /* ----------------- */
-                         :peso, :tiempo, :dist, :desc)";
-        
-        $stmt_hijo = $db->prepare($query_hijo);
+        $stmt_hijo = $conexion->prepare($consulta_hijo);
 
-        // 6. Iteramos sobre el array de objetivos
         foreach ($objetivos as $obj) {
-            
-            // --- ¡CAMBIOS V6.0 AQUÍ! ---
-            // Asumimos que React envía $obj->tipo_rep_objetivo, $obj->reps_min_objetivo, etc.
-            
-            $stmt_hijo->bindValue(":re_id", $rutina_ejercicio_id);
+            $stmt_hijo->bindValue(":re_id", $id_rutina_ejercicio);
             $stmt_hijo->bindValue(":num_serie", $obj->num_serie ?? 1);
-            
-            // Campos V6.0 (Fuerza)
             $stmt_hijo->bindValue(":tipo_rep", $obj->tipo_rep_objetivo ?? 'fijo');
             $stmt_hijo->bindValue(":reps_min", $obj->reps_min_objetivo ?? null);
             $stmt_hijo->bindValue(":reps_max", $obj->reps_max_objetivo ?? null);
-            
-            // Campo Peso (Sin cambio)
             $stmt_hijo->bindValue(":peso", $obj->peso_kg_objetivo ?? null);
-
-            // Campos Cardio (Sin cambio)
             $stmt_hijo->bindValue(":tiempo", $obj->tiempo_min_objetivo ?? null);
             $stmt_hijo->bindValue(":dist", $obj->distancia_km_objetivo ?? null);
-            
-            // Campo Descanso (Sin cambio)
             $stmt_hijo->bindValue(":desc", $obj->descanso_seg_post ?? null);
-            
             $stmt_hijo->execute();
         }
     }
     
-    // 7. Commit (Sin cambios)
-    $db->commit();
+    // Devolver el objeto creado (sin re.orden porque no existe en la BD)
+    $consulta_nuevo = "SELECT re.id, re.ejercicio_id,
+                           ej.nombre as nombre_ejercicio, ej.grupo_muscular, ej.tipo
+                       FROM rutina_ejercicios re
+                       JOIN ejercicios ej ON re.ejercicio_id = ej.id
+                       WHERE re.id = :nuevo_id LIMIT 1";
 
-    // 8. Devolver el objeto recién creado (Sin cambios)
-    $query_nuevo = "SELECT 
-                        re.id, re.ejercicio_id, re.orden,
-                        ej.nombre as nombre_ejercicio, ej.grupo_muscular, ej.tipo
-           
-                     FROM rutina_ejercicios re
-                    JOIN ejercicios ej ON re.ejercicio_id = ej.id
-                    WHERE re.id = :nuevo_id LIMIT 1";
-    
-    $stmt_nuevo = $db->prepare($query_nuevo);
-    $stmt_nuevo->bindParam(":nuevo_id", $rutina_ejercicio_id);
+    $stmt_nuevo = $conexion->prepare($consulta_nuevo);
+    $stmt_nuevo->bindParam(":nuevo_id", $id_rutina_ejercicio);
     $stmt_nuevo->execute();
     $ejercicio_agregado = $stmt_nuevo->fetch(PDO::FETCH_ASSOC);
     
-    // Convertimos el array de stdClass (de json_decode) a array asociativo
-    $ejercicio_agregado['objetivos'] = json_decode(json_encode($objetivos), true);
+    $arr_objetivos = [];
+    foreach ($objetivos as $obj) {
+        $arr_objetivos[] = (array)$obj;
+    }
+    $ejercicio_agregado['objetivos'] = $arr_objetivos;
 
     http_response_code(201);
     echo json_encode(array(
@@ -161,8 +146,6 @@ try {
     ));
 
 } catch (Exception $e) {
-    // 9. Rollback (Sin cambios)
-    $db->rollBack();
     $codigo = $e->getCode() == 403 ? 403 : 500;
     http_response_code($codigo);
     echo json_encode(array(

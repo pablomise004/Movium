@@ -1,34 +1,29 @@
 import React from 'react';
-// Reutilizamos el CSS del modal de borrado para el estilo "danger"
 import './ConfirmarBorradoModal.css';
 
-/**
- * Un modal genérico para confirmar acciones peligrosas (rojas).
- * Acepta props para personalizar el texto.
- */
+// Modal generico para acciones peligrosas
 function ConfirmarAccionModal({ 
-  isOpen, 
-  onClose, 
-  onConfirm, 
+  isOpen: abierto, 
+  onClose: cerrar, 
+  onConfirm: confirmar, 
   titulo, 
   mensaje, 
-  textoBotonConfirmar = "Confirmar", // Texto por defecto
-  isConfirmando = false // Para mostrar estado de carga
+  textoBotonConfirmar = "Confirmar",
+  isConfirmando = false
 }) {
-  
-  if (!isOpen) {
+  if (!abierto) {
     return null;
   }
 
   return (
-    <div className="modal-backdrop-danger" onClick={onClose}>
+    <div className="modal-backdrop-danger" onClick={cerrar}>
       <div className="modal-content-danger" onClick={(e) => e.stopPropagation()}>
         
         <div className="modal-header-danger">
           <h3>{titulo}</h3>
           <button 
             className="modal-close-btn-danger" 
-            onClick={onClose} 
+            onClick={cerrar} 
             disabled={isConfirmando}
           >
             &times;
@@ -36,7 +31,6 @@ function ConfirmarAccionModal({
         </div>
         
         <div className="modal-body-danger">
-          {/* El mensaje se pasa como prop */}
           <p>{mensaje}</p>
         </div>
         
@@ -44,7 +38,7 @@ function ConfirmarAccionModal({
           <button
             type="button"
             className="btn-cancel-danger"
-            onClick={onClose}
+            onClick={cerrar}
             disabled={isConfirmando}
           >
             Cancelar
@@ -52,7 +46,7 @@ function ConfirmarAccionModal({
           <button
             type="button"
             className="btn-confirm-danger"
-            onClick={onConfirm} 
+            onClick={confirmar} 
             disabled={isConfirmando}
           >
             {isConfirmando ? 'Cargando...' : textoBotonConfirmar}

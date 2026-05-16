@@ -1,6 +1,4 @@
-/* ---- frontend/src/components/ConfirmarBorradoModal.css ---- */
-
-.modal-backdrop-danger {
+﻿.modal-backdrop-danger {
   position: fixed;
   top: 0;
   left: 0;
@@ -17,24 +15,27 @@
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
 .modal-content-danger {
-  background-color: var(--surface-color);
+  background-color: var(--color-superficie);
   
-  /* --- CORRECCIÓN AQUÍ --- 
-     Quitamos el borde rojo y la sombra roja 
-  */
-  border: 1px solid var(--input-border-color); /* Borde normal */
+  border: 1px solid var(--color-borde-input); 
   border-radius: 12px;
   width: 90%;
   max-width: 500px;
-  box-shadow: var(--box-shadow); /* Sombra normal */
+  box-shadow: var(--sombra); 
   display: flex;
   flex-direction: column;
   animation: slideIn 0.3s ease-out;
 }
 
 @keyframes slideIn {
-  from { transform: translateY(-30px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
+  from {
+    transform: translateY(-30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 .modal-header-danger {
@@ -42,26 +43,22 @@
   justify-content: space-between;
   align-items: center;
   padding: 1rem 1.5rem;
-  /* --- CORRECCIÓN AQUÍ --- 
-     Usamos el borde normal
-  */
-  border-bottom: 1px solid var(--input-border-color);
+  
+  border-bottom: 1px solid var(--color-borde-input);
 }
 
 .modal-header-danger h3 {
   margin: 0;
   font-size: 1.25rem;
-  /* --- CORRECCIÓN AQUÍ --- 
-     El título ya no es rojo, solo el botón de confirmar
-  */
-  color: var(--text-color); 
+  
+  color: var(--color-texto); 
 }
 
 .modal-close-btn-danger {
   background: none;
   border: none;
   font-size: 2rem;
-  color: var(--text-secondary-color);
+  color: var(--color-texto-secundario);
   cursor: pointer;
   line-height: 1;
 }
@@ -72,41 +69,37 @@
 }
 
 .modal-body-danger p {
-  color: var(--text-color);
+  color: var(--color-texto);
   margin-top: 0;
   margin-bottom: 1rem;
 }
 
 .modal-body-danger strong {
-  color: var(--primary-color);
+  color: var(--color-principal);
   font-size: 1.1rem;
   display: block;
   text-align: center;
   margin-bottom: 1rem;
-  background-color: var(--input-bg-color);
+  background-color: var(--color-fondo-input);
   padding: 0.5rem;
   border-radius: 6px;
 }
 
-/* --- ¡NUEVO ESTILO! --- 
-   Clase para el párrafo de advertencia
-*/
 .text-danger-warning {
-  color: #d93025; /* Texto rojo */
+  color: #d93025; 
   background-color: rgba(217, 48, 37, 0.1);
   border: 1px solid #d93025;
   padding: 1rem;
   border-radius: 8px;
 }
 .text-danger-warning strong {
-    color: #d93025; /* Hacemos el strong rojo también */
+    color: #d93025; 
     background: none;
     padding: 0;
     margin: 0;
     text-align: left;
     display: inline;
 }
-
 
 .modal-body-danger p:last-child {
   margin-bottom: 0;
@@ -118,10 +111,9 @@
   justify-content: flex-end;
   gap: 1rem;
   padding: 1.5rem;
-  border-top: 1px solid var(--input-border-color);
+  border-top: 1px solid var(--color-borde-input);
 }
 
-/* Botones del footer (Sin cambios) */
 .btn-cancel-danger, .btn-confirm-danger {
   height: 48px;
   border-radius: 999px;
@@ -129,18 +121,18 @@
   font-weight: 700;
   cursor: pointer;
   transition: all 0.3s ease;
-  font-family: var(--font-family);
+  font-family: var(--fuente);
   border: none;
   padding: 0 1.8rem;
 }
 
 .btn-cancel-danger {
-  background-color: var(--input-bg-color);
-  color: var(--text-secondary-color);
+  background-color: var(--color-fondo-input);
+  color: var(--color-texto-secundario);
 }
 .btn-cancel-danger:hover:not(:disabled) {
-  background-color: var(--input-border-color);
-  color: var(--text-color);
+  background-color: var(--color-borde-input);
+  color: var(--color-texto);
 }
 
 .btn-confirm-danger {

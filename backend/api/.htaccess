@@ -7,6 +7,7 @@
 
 <IfModule mod_rewrite.c>
     RewriteEngine On
+    # Sin esto Apache no pasaba el header Authorization a PHP y el token no llegaba
     SetEnvIfNoCase Authorization "^(.*)$" HTTP_AUTHORIZATION=$1
     RewriteCond %{REQUEST_METHOD} OPTIONS
     RewriteRule ^ - [R=200,L]

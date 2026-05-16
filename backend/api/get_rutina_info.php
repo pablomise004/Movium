@@ -1,35 +1,42 @@
 <?php
-// ---- backend/api/get_rutina_info.php (MODIFICADO) ----
+// Obtener info de una rutina
 
 // Cabeceras CORS
 header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json; charset=UTF-8");
-header("Access-Control-Allow-Methods: GET");
+header("Access-Control-Allow-Methods: GET, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
-require_once '../config/database.php';
+
+// El navegador primero comprueba con OPTIONS si puede hacer la peticion real
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit();
+}
+
+require_once '../config/base_de_datos.php';
 require_once '../vendor/autoload.php';
+require_once '../config/configuracion_jwt.php';
 
 use \Firebase\JWT\JWT;
 use \Firebase\JWT\Key;
 
-// Tu clave secreta
-$secret_key = "k#f9JLz@p7W!bN8^vG2*qR5sT&eD4hX%uY1aC6oP3zM0xQñ";
-// =================================================================
-// PASO 1: LÓGICA DE VALIDACIÓN DE TOKEN (Idéntica)
-// =================================================================
-$jwt = null;
-$authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? null;
-$usuario_id = null;
+// Clave secreta
+$clave_secreta = JWT_SECRET;
 
-if ($authHeader) {
-    $arr = explode(" ", $authHeader);
-    $jwt = $arr[1] ?? null;
+// Validar token
+$token = null;
+$cabecera = $_SERVER['HTTP_AUTHORIZATION'] ?? null;
+$id_usuario = null;
+
+if ($cabecera) {
+    $partes = explode(" ", $cabecera);
+    $token = $partes[1] ?? null;
 }
 
-if ($jwt) {
+if ($token) {
     try {
-        $decoded = JWT::decode($jwt, new Key($secret_key, 'HS256'));
-        $usuario_id = $decoded->data->id;
+        $decodificado = JWT::decode($token, new Key($clave_secreta, 'HS256'));
+        $id_usuario = $decodificado->data->id;
     } catch (Exception $e) {
         http_response_code(401);
         echo json_encode(array("mensaje" => "Acceso denegado. Token inválido."));
@@ -41,9 +48,7 @@ if ($jwt) {
     die();
 }
 
-// =================================================================
-// PASO 2: OBTENER EL ID DE LA RUTINA DESDE LA URL
-// =================================================================
+// Obtener el ID de la rutina desde la URL
 $rutina_id = $_GET['id'] ?? null;
 if (!$rutina_id) {
     http_response_code(400); // Bad Request
@@ -51,78 +56,27 @@ if (!$rutina_id) {
     die();
 }
 
-// =================================================================
-// PASO 3: LÓGICA PARA OBTENER LA INFO DE ESA RUTINA (MODIFICADA)
-// =================================================================
-
+// Obtener la info de la rutina
 try {
-    $database = new Database();
-    $db = $database->getConnection();
+    $bd = new Database();
+    $conexion = $bd->getConnection();
 
-    $usaEsquemaNuevo = true;
-    $max_orden_usuario = 0;
+    $consulta = "SELECT id, nombre, dias_semana
+                 FROM rutinas
+                 WHERE id = :rutina_id AND usuario_id = :usuario_id
+                 LIMIT 1";
 
-    // Intento 1: esquema nuevo con columna orden.
-    // Si no existe (1054), fallback a esquema antiguo.
-    try {
-        $query_max = "SELECT MAX(orden) as max_orden FROM rutinas WHERE usuario_id = :usuario_id_max";
-        $stmt_max = $db->prepare($query_max);
-        $stmt_max->bindParam(":usuario_id_max", $usuario_id, PDO::PARAM_INT);
-        $stmt_max->execute();
-        $max_orden_row = $stmt_max->fetch(PDO::FETCH_ASSOC);
-        $max_orden_usuario = (int)($max_orden_row['max_orden'] ?? 0);
-    } catch (PDOException $e) {
-        if (($e->errorInfo[1] ?? null) !== 1054) {
-            throw $e;
-        }
-        $usaEsquemaNuevo = false;
-        $query_max = "SELECT COUNT(*) as total_rutinas FROM rutinas WHERE usuario_id = :usuario_id_max";
-        $stmt_max = $db->prepare($query_max);
-        $stmt_max->bindParam(":usuario_id_max", $usuario_id, PDO::PARAM_INT);
-        $stmt_max->execute();
-        $max_orden_row = $stmt_max->fetch(PDO::FETCH_ASSOC);
-        $max_orden_usuario = (int)($max_orden_row['total_rutinas'] ?? 0);
-    }
+    $sentencia = $conexion->prepare($consulta);
+    $sentencia->bindParam(":rutina_id", $rutina_id, PDO::PARAM_INT);
+    $sentencia->bindParam(":usuario_id", $id_usuario, PDO::PARAM_INT);
+    $sentencia->execute();
 
-    if ($usaEsquemaNuevo) {
-        $query = "SELECT id, nombre, dias_semana, orden, color_tag
-                  FROM rutinas
-                  WHERE id = :rutina_id AND usuario_id = :usuario_id
-                  LIMIT 1";
-    } else {
-        $query = "SELECT id, nombre, dias_semana, NULL as orden, NULL as color_tag
-                  FROM rutinas
-                  WHERE id = :rutina_id AND usuario_id = :usuario_id
-                  LIMIT 1";
-    }
-
-    $stmt = $db->prepare($query);
-    
-    // 3. Bindear (enlazar) los parámetros
-    $stmt->bindParam(":rutina_id", $rutina_id, PDO::PARAM_INT);
-    $stmt->bindParam(":usuario_id", $usuario_id, PDO::PARAM_INT);
-    // 4. Ejecutar
-    $stmt->execute();
-    
-    // 5. Obtener el resultado
-    $rutina = $stmt->fetch(PDO::FETCH_ASSOC);
-    // 6. Comprobar si se encontró la rutina
+    $rutina = $sentencia->fetch(PDO::FETCH_ASSOC);
     if ($rutina) {
-        // ¡Éxito!
-        
-        // --- ¡CAMBIO AQUÍ! ---
-        // 7. Añadimos el max_orden a la respuesta
-        // Si no hay rutinas (max_orden_usuario es 0), al menos enviamos 1
-        $rutina['max_orden_disponible'] = ($max_orden_usuario > 0) ? $max_orden_usuario : 1;
-        // --- FIN CAMBIO ---
-
         http_response_code(200);
         echo json_encode($rutina);
-        // Ahora incluye 'orden', 'color_tag' y 'max_orden_disponible'
     } else {
-        // No se encontró la rutina
         http_response_code(404);
-        // Not Found
         echo json_encode(array("mensaje" => "Rutina no encontrada o no te pertenece."));
     }
 

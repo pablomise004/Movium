@@ -1,16 +1,22 @@
 <?php
 // Inicio de sesion por nombre de usuario
 
-// Cabeceras para permitir peticiones desde el frontend
+// Cabeceras CORS
 header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json; charset=UTF-8");
-header("Access-Control-Allow-Methods: POST");
-header("Access-Control-Max-Age: 3600");
-header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
+header("Access-Control-Allow-Methods: POST, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type, Authorization");
+
+// Para que el navegador acepte CORS
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit();
+}
 
 // Cargar conexion a BD y libreria JWT
-require_once '../config/database.php';
+require_once '../config/base_de_datos.php';
 require_once '../vendor/autoload.php';
+require_once '../config/configuracion_jwt.php';
 
 use \Firebase\JWT\JWT;
 
@@ -19,17 +25,11 @@ $baseDatos = new Database();
 $conexion = $baseDatos->getConnection();
 $datos = json_decode(file_get_contents("php://input"));
 
-// Helper para responder error y terminar ejecucion
-function responderErrorLogin($codigo, $mensaje)
-{
-    http_response_code($codigo);
-    echo json_encode(array("mensaje" => $mensaje));
-    die();
-}
-
 // Validar entrada minima
 if (empty($datos->nombre_usuario) || empty($datos->password)) {
-    responderErrorLogin(400, "Datos incompletos.");
+    http_response_code(400);
+    echo json_encode(array("mensaje" => "Datos incompletos."));
+    die();
 }
 
 // Limpiar datos de entrada
@@ -49,7 +49,9 @@ $stmt->execute();
 
 // Si no existe el usuario, devolver 401
 if ($stmt->rowCount() === 0) {
-    responderErrorLogin(401, "Usuario no encontrado.");
+    http_response_code(401);
+    echo json_encode(array("mensaje" => "Usuario no encontrado."));
+    die();
 }
 
 // Leer fila del usuario encontrado
@@ -57,11 +59,13 @@ $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
 
 // Comparar password enviada vs hash guardado
 if (!password_verify($contrasena, $usuario['password_hash'])) {
-    responderErrorLogin(401, "Contraseña incorrecta.");
+    http_response_code(401);
+    echo json_encode(array("mensaje" => "Contraseña incorrecta."));
+    die();
 }
 
 // Si todo va bien, generar token JWT
-$claveSecreta = "k#f9JLz@p7W!bN8^vG2*qR5sT&eD4hX%uY1aC6oP3zM0xQñ";
+$claveSecreta = JWT_SECRET;
 $payload = array(
     // Fecha de emision del token
     "iat" => time(),

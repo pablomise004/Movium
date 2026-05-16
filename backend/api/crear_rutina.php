@@ -1,30 +1,33 @@
 <?php
-// ---- backend/api/crear_rutina.php (MODIFICADO para 'orden') ----
+// Crear rutina del usuario
 
+// Cabeceras para peticiones desde el frontend
 header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json; charset=UTF-8");
 header("Access-Control-Allow-Methods: POST");
 header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
 
-require_once '../config/database.php';
+// Cargar conexion y JWT
+require_once '../config/base_de_datos.php';
 require_once '../vendor/autoload.php';
+require_once '../config/configuracion_jwt.php';
 
 use \Firebase\JWT\JWT;
 use \Firebase\JWT\Key;
 
-// ... (Validación de Token sin cambios) ...
-$secret_key = "k#f9JLz@p7W!bN8^vG2*qR5sT&eD4hX%uY1aC6oP3zM0xQñ";
-$jwt = null;
-$authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? null;
-$usuario_id = null;
-if ($authHeader) {
-    $arr = explode(" ", $authHeader);
-    $jwt = $arr[1] ?? null;
+// Validar token y extraer usuario
+$clave_secreta = JWT_SECRET;
+$token = null;
+$cabecera = $_SERVER['HTTP_AUTHORIZATION'] ?? null;
+$id_usuario = null;
+if ($cabecera) {
+    $partes = explode(" ", $cabecera);
+    $token = $partes[1] ?? null;
 }
-if ($jwt) {
+if ($token) {
     try {
-        $decoded = JWT::decode($jwt, new Key($secret_key, 'HS256'));
-        $usuario_id = $decoded->data->id;
+        $decodificado = JWT::decode($token, new Key($clave_secreta, 'HS256'));
+        $id_usuario = $decodificado->data->id;
     } catch (Exception $e) {
         http_response_code(401);
         echo json_encode(array("mensaje" => "Acceso denegado. Token inválido o expirado.", "error" => $e->getMessage()));
@@ -36,88 +39,57 @@ if ($jwt) {
     die();
 }
 
-define("MAX_NOMBRE_RUTINA_LENGTH", 38);
-define("MAX_DIAS_SEMANA_LENGTH", 60);
+// Limites de entrada
+define("MAX_NOMBRE_RUTINA", 38);
+define("MAX_DIAS_SEMANA", 60);
 
-$data = json_decode(file_get_contents("php://input"));
-if (empty($data->nombre_rutina) || empty($usuario_id)) {
+// Leer body JSON
+$datos = json_decode(file_get_contents("php://input"));
+if (empty($datos->nombre_rutina) || empty($id_usuario)) {
     http_response_code(400);
     echo json_encode(array("mensaje" => "Datos incompletos. Se requiere nombre_rutina y un usuario válido."));
     die();
 }
 
-$nombre = trim($data->nombre_rutina);
-$dias_semana = isset($data->dias_semana) ? trim($data->dias_semana) : null;
+// Limpiar datos de entrada
+$nombre = trim($datos->nombre_rutina);
+$dias = isset($datos->dias_semana) ? trim($datos->dias_semana) : null;
 
-// ... (Validaciones de longitud sin cambios) ...
-if (mb_strlen($nombre, 'UTF-8') > MAX_NOMBRE_RUTINA_LENGTH) {
+// Validar longitudes
+if (strlen($nombre) > MAX_NOMBRE_RUTINA) {
     http_response_code(400);
-    echo json_encode(array("mensaje" => "El nombre de la rutina no puede exceder los " . MAX_NOMBRE_RUTINA_LENGTH . " caracteres."));
+    echo json_encode(array("mensaje" => "El nombre de la rutina no puede exceder los " . MAX_NOMBRE_RUTINA . " caracteres."));
     die();
 }
-if ($dias_semana !== null && mb_strlen($dias_semana, 'UTF-8') > MAX_DIAS_SEMANA_LENGTH) {
+if ($dias !== null && strlen($dias) > MAX_DIAS_SEMANA) {
     http_response_code(400);
-    echo json_encode(array("mensaje" => "La descripción/días no puede exceder los " . MAX_DIAS_SEMANA_LENGTH . " caracteres."));
+    echo json_encode(array("mensaje" => "La descripción/días no puede exceder los " . MAX_DIAS_SEMANA . " caracteres."));
     die();
 }
 
-// 3. Preparar la conexión a la BBDD
+// Preparar la conexion a la BBDD
 try {
-    $database = new Database();
-    $db = $database->getConnection();
+    $bd = new Database();
+    $conexion = $bd->getConnection();
 
-    $insertConOrden = true;
-    $nuevo_orden = 1;
+    $consulta = "INSERT INTO rutinas (usuario_id, nombre, dias_semana)
+                 VALUES (:usuario_id, :nombre, :dias_semana)";
+    $sentencia = $conexion->prepare($consulta);
+    $sentencia->bindParam(":usuario_id", $id_usuario);
+    $sentencia->bindParam(":nombre", $nombre);
+    $sentencia->bindParam(":dias_semana", $dias);
 
-    // Intento 1: esquema nuevo con columna 'orden'.
-    // Si la columna no existe (1054), hacemos fallback al esquema antiguo.
-    try {
-        $query_orden = "SELECT MAX(orden) as max_orden FROM rutinas WHERE usuario_id = :usuario_id";
-        $stmt_orden = $db->prepare($query_orden);
-        $stmt_orden->bindParam(":usuario_id", $usuario_id);
-        $stmt_orden->execute();
-        $resultado = $stmt_orden->fetch(PDO::FETCH_ASSOC);
-        $nuevo_orden = ($resultado['max_orden'] ?? 0) + 1;
-    } catch (PDOException $e) {
-        if (($e->errorInfo[1] ?? null) !== 1054) {
-            throw $e;
-        }
-        $insertConOrden = false;
-    }
-
-    if ($insertConOrden) {
-        $query = "INSERT INTO rutinas (usuario_id, nombre, dias_semana, orden)
-                  VALUES (:usuario_id, :nombre, :dias_semana, :orden)";
-        $stmt = $db->prepare($query);
-        $stmt->bindParam(":usuario_id", $usuario_id);
-        $stmt->bindParam(":nombre", $nombre);
-        $stmt->bindParam(":dias_semana", $dias_semana);
-        $stmt->bindParam(":orden", $nuevo_orden);
-    } else {
-        $query = "INSERT INTO rutinas (usuario_id, nombre, dias_semana)
-                  VALUES (:usuario_id, :nombre, :dias_semana)";
-        $stmt = $db->prepare($query);
-        $stmt->bindParam(":usuario_id", $usuario_id);
-        $stmt->bindParam(":nombre", $nombre);
-        $stmt->bindParam(":dias_semana", $dias_semana);
-    }
-
-    if ($stmt->execute()) {
-        $nueva_rutina_id = $db->lastInsertId();
-        http_response_code(201);
-        echo json_encode(array(
-            "mensaje" => "Rutina creada exitosamente.",
-            "rutina" => [
-                "id" => $nueva_rutina_id,
-                "nombre" => $nombre,
-                "dias" => $dias_semana
-                // No necesitamos devolver el orden aquí, pero podríamos
-            ]
-        ));
-    } else {
-        http_response_code(500);
-        echo json_encode(array("mensaje" => "No se pudo crear la rutina en la base de datos."));
-    }
+    $sentencia->execute();
+    $id_rutina = $conexion->lastInsertId();
+    http_response_code(201);
+    echo json_encode(array(
+        "mensaje" => "Rutina creada exitosamente.",
+        "rutina" => [
+            "id" => $id_rutina,
+            "nombre" => $nombre,
+            "dias" => $dias
+        ]
+    ));
 } catch (Exception $e) {
     http_response_code(500);
     echo json_encode(array(

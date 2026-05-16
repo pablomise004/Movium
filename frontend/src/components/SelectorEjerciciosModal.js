@@ -1,47 +1,36 @@
-// ---- frontend/src/components/SelectorEjerciciosModal.js (NUEVO ARCHIVO) ----
+// Modal para elegir ejercicios
 
-import React, { useState, useMemo } from 'react';
-import './SelectorEjerciciosModal.css'; // <-- Crearemos este CSS
+import React, { useState } from 'react';
+import './SelectorEjerciciosModal.css';
 
-function SelectorEjerciciosModal({ 
-  isOpen, 
-  onClose, 
-  listaEjercicios, 
-  onEjercicioSelect 
-}) {
+function SelectorEjerciciosModal({ isOpen, onClose, listaEjercicios, onEjercicioSelect }) {
 
-  // 1. ESTADOS
+  // Estados
   const [filtroNombre, setFiltroNombre] = useState("");
   const [filtroGrupo, setFiltroGrupo] = useState("Todos");
 
-  // 2. LÓGICA DE FILTRADO
-  
-  // Obtenemos la lista de grupos musculares únicos (esto solo se calcula una vez)
-  const gruposMusculares = useMemo(() => {
-    const grupos = new Set(listaEjercicios.map(ej => ej.grupo_muscular));
-    return ["Todos", ...grupos];
-  }, [listaEjercicios]);
+  // Lista de grupos musculares sin repetidos
+  const gruposMusculares = ["Todos"];
+  listaEjercicios.forEach(ej => {
+    if (ej.grupo_muscular && !gruposMusculares.includes(ej.grupo_muscular)) {
+      gruposMusculares.push(ej.grupo_muscular);
+    }
+  });
 
-  // Filtramos la lista de ejercicios basándonos en los estados
-  const listaFiltrada = useMemo(() => {
-    return listaEjercicios.filter(ej => {
-      // 1. Filtro por Grupo
-      const pasaFiltroGrupo = (filtroGrupo === "Todos") || (ej.grupo_muscular === filtroGrupo);
-      
-      // 2. Filtro por Nombre
-      const pasaFiltroNombre = ej.nombre.toLowerCase().includes(filtroNombre.toLowerCase());
-      
-      return pasaFiltroGrupo && pasaFiltroNombre;
-    });
-  }, [listaEjercicios, filtroNombre, filtroGrupo]);
+  // Filtrar la lista segun los filtros activos
+  const listaFiltrada = listaEjercicios.filter(ej => {
+    const pasaFiltroGrupo = (filtroGrupo === "Todos") || (ej.grupo_muscular === filtroGrupo);
+    const pasaFiltroNombre = ej.nombre.toLowerCase().includes(filtroNombre.toLowerCase());
+    return pasaFiltroGrupo && pasaFiltroNombre;
+  });
 
-  // 3. HANDLERS
-  const handleSelect = (ejercicio) => {
-    onEjercicioSelect(ejercicio); // Devuelve el ejercicio seleccionado
-    onClose(); // Cierra el modal
+  // Accion al seleccionar
+  const seleccionarEjercicio = (ejercicio) => {
+    onEjercicioSelect(ejercicio);
+    onClose();
   };
 
-  // Si no está abierto, no renderiza nada
+  // Si no esta abierto no muestra nada
   if (!isOpen) {
     return null;
   }
@@ -87,7 +76,7 @@ function SelectorEjerciciosModal({
               <button 
                 key={ej.id} 
                 className="modal-list-item"
-                onClick={() => handleSelect(ej)}
+                onClick={() => seleccionarEjercicio(ej)}
               >
                 <strong>{ej.nombre}</strong>
                 <span>{ej.grupo_muscular}</span>

@@ -1,24 +1,19 @@
-// ---- frontend/src/Ayuda.js ----
-
 import React from 'react';
 import './Ayuda.css';
 import iconoAyuda from './assets/ayuda.png';
-// Importa el icono de ayuda
 
 function Ayuda() {
   return (
     <div className="ayuda-container">
-      {/* --- DIV contenedor para Icono y Título, CENTRADO --- */}
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '0.5rem', gap: '10px' }}>
-        <img src={iconoAyuda} alt="" width="64" height="64" /> {/* Icono 64x64 y ARRIBA */}
-        <h2>Guía de Uso y Ayuda</h2> {/* Título CENTRADO */}
+        <img src={iconoAyuda} alt="" width="64" height="64" />
+        <h2>Guía de Uso y Ayuda</h2>
       </div>
 
       <p className="subtitle" style={{ textAlign: 'center' }}>
         Aquí encontrarás explicaciones sobre cómo usar Movium y qué significan algunos términos.
       </p>
 
-      {/* --- SECCIÓN 1: Rutinas --- */}
       <section className="ayuda-seccion">
         <h3>Gestión de Rutinas</h3>
         <p>
@@ -26,20 +21,16 @@ function Ayuda() {
           darle un nombre y opcionalmente indicar qué días la harás o alguna descripción útil.
         </p>
         
-        {/* --- PÁRRAFO MODIFICADO (COLORES Y ORDEN) --- */}
         <p>
           Para <b>editar</b> una rutina existente, haz clic en el icono del lápiz ✏️ en la tarjeta de la rutina en Inicio.
           Una vez dentro, podrás modificar su información:
         </p>
         <ul style={{ lineHeight: '1.7' }}>
             <li><b>Nombre/Descripción:</b> El nombre principal y su descripción (ej: "Lunes y Jueves").</li>
-            <li><b>Orden en Inicio:</b> Un número para priorizarla. La rutina con orden "1" saldrá primero en la pantalla de Inicio.</li>
-            <li><b>Color de Tarjeta:</b> Puedes asignarle un <strong>color personalizado</strong> (ej: rojo para pierna, azul para pecho) para identificarla mejor en Inicio.</li>
         </ul>
         <p>
           Desde esta vista también podrás añadir o quitar ejercicios.
         </p>
-        {/* --- FIN DE MODIFICACIÓN --- */}
 
         <h4>¿Cuándo entrenaste por última vez?</h4>
         <p>
@@ -50,7 +41,6 @@ function Ayuda() {
         </p>
       </section>
 
-      {/* --- SECCIÓN 2: Ejercicios y Series --- */}
       <section className="ayuda-seccion">
         <h3>Añadir Ejercicios y Series</h3>
         <p>
@@ -89,7 +79,6 @@ function Ayuda() {
         </p>
       </section>
 
-      {/* --- SECCIÓN 3: Entrenar --- */}
       <section className="ayuda-seccion">
         <h3>Registrar un Entrenamiento</h3>
         <p>
@@ -110,7 +99,6 @@ function Ayuda() {
         </p>
       </section>
 
-      {/* --- SECCIÓN 4: Progreso y Estadísticas --- */}
       <section className="ayuda-seccion">
         <h3>Progreso (por Rutina) y Estadísticas (PRs)</h3>
 
@@ -149,7 +137,6 @@ function Ayuda() {
         </ul>
       </section>
 
-      {/* --- SECCIÓN: Perfil --- */}
       <section className="ayuda-seccion">
         <h3>Tu Perfil y Cuenta</h3>
         <p>
@@ -164,7 +151,6 @@ function Ayuda() {
         </p>
       </section>
 
-      {/* --- SECCIÓN: Conceptos Técnicos --- */}
       <section className="ayuda-seccion">
         <h3>Conceptos Clave</h3>
         <dl>
@@ -194,12 +180,10 @@ function Ayuda() {
         </dl>
       </section>
       
-      {/* --- SECCIÓN: Lista de Ejercicios CON GRUPO MUSCULAR (COMPLETA) --- */}
       <section className="ayuda-seccion">
         <h3>Lista de Ejercicios y Descripciones</h3>
         <p>Aquí tienes una lista de los ejercicios disponibles en la aplicación, su grupo muscular principal y una breve descripción</p>
         <dl className="lista-ejercicios-descripcion">
-          {/* PECHO */}
           <dt>Press de Banca con Barra <span className="ejercicio-grupo-tag">Pecho</span></dt>
           <dd>Acostado en un banco plano, bajar la barra al pecho y empujar hacia arriba.</dd>
           <dt>Press de Banca Inclinado con Barra <span className="ejercicio-grupo-tag">Pecho</span></dt>
@@ -221,7 +205,6 @@ function Ayuda() {
           <dt>Pullover con Mancuerna <span className="ejercicio-grupo-tag">Pecho</span></dt>
           <dd>Acostado transversalmente en un banco, bajar una mancuerna por detrás de la cabeza.</dd>
 
-          {/* ESPALDA */}
           <dt>Dominadas (Pull-ups) <span className="ejercicio-grupo-tag">Espalda</span></dt>
           <dd>Colgado de una barra, subir el cuerpo hasta que la barbilla la supere (agarre prono).</dd>
           <dt>Dominadas Agarre Neutro/Supino (Chin-ups) <span className="ejercicio-grupo-tag">Espalda</span></dt>
@@ -241,7 +224,6 @@ function Ayuda() {
           <dt>Hiperextensiones (Back Extensions) <span className="ejercicio-grupo-tag">Lumbar</span></dt>
           <dd>En un banco de hiperextensiones, flexionar y extender la cadera.</dd>
 
-          {/* PIERNA */}
           <dt>Sentadilla con Barra (Squat) <span className="ejercicio-grupo-tag">Pierna</span></dt>
           <dd>Con la barra en la espalda, bajar la cadera por debajo de las rodillas y subir.</dd>
           <dt>Sentadilla Frontal (Front Squat) <span className="ejercicio-grupo-tag">Pierna</span></dt>
@@ -269,7 +251,6 @@ function Ayuda() {
           <dt>Elevación de Gemelos Sentado <span className="ejercicio-grupo-tag">Gemelo</span></dt>
           <dd>Sentado, ponerse de puntillas contra la resistencia.</dd>
 
-          {/* HOMBRO */}
           <dt>Press Militar con Barra (Overhead Press) <span className="ejercicio-grupo-tag">Hombro</span></dt>
           <dd>De pie o sentado, empujar la barra desde los hombros por encima de la cabeza.</dd>
           <dt>Press Militar con Mancuernas <span className="ejercicio-grupo-tag">Hombro</span></dt>
@@ -287,7 +268,6 @@ function Ayuda() {
           <dt>Encogimientos (Shrugs) con Barra <span className="ejercicio-grupo-tag">Trapecio</span></dt>
           <dd>Encoger los hombros hacia las orejas sosteniendo una barra pesada.</dd>
 
-          {/* BÍCEPS */}
           <dt>Curl de Bíceps con Barra <span className="ejercicio-grupo-tag">Bíceps</span></dt>
           <dd>De pie, flexionar los codos para levantar la barra.</dd>
           <dt>Curl de Bíceps con Mancuernas (Alterno) <span className="ejercicio-grupo-tag">Bíceps</span></dt>
@@ -299,7 +279,6 @@ function Ayuda() {
           <dt>Curl de Concentración <span className="ejercicio-grupo-tag">Bíceps</span></dt>
           <dd>Sentado, apoyar el codo en el muslo y flexionar.</dd>
 
-          {/* TRÍCEPS */}
           <dt>Fondos de Tríceps (en banco) <span className="ejercicio-grupo-tag">Tríceps</span></dt>
           <dd>De espaldas a un banco, bajar y subir el cuerpo con las manos apoyadas.</dd>
           <dt>Press Francés (Skullcrushers) <span className="ejercicio-grupo-tag">Tríceps</span></dt>
@@ -311,7 +290,6 @@ function Ayuda() {
           <dt>Patada de Tríceps (Tricep Kickback) <span className="ejercicio-grupo-tag">Tríceps</span></dt>
           <dd>Inclinado, extender el codo hacia atrás con una mancuerna.</dd>
 
-          {/* ABDOMEN */}
           <dt>Crunch Abdominal <span className="ejercicio-grupo-tag">Abdomen</span></dt>
           <dd>Acostado, contraer el abdomen para levantar los hombros del suelo.</dd>
           <dt>Plancha (Plank) <span className="ejercicio-grupo-tag">Abdomen</span></dt>
@@ -323,7 +301,6 @@ function Ayuda() {
           <dt>Russian Twist <span className="ejercicio-grupo-tag">Abdomen</span></dt>
           <dd>Sentado en V, girar el torso de un lado a otro (con o sin peso).</dd>
 
-          {/* CARDIO */}
           <dt>Cinta - Correr <span className="ejercicio-grupo-tag">Cardio</span></dt>
           <dd>Correr a una velocidad constante o en intervalos en la cinta.</dd>
           <dt>Cinta - Caminar Inclinado <span className="ejercicio-grupo-tag">Cardio</span></dt>

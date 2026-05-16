@@ -1,33 +1,31 @@
 // Pantalla de acceso y registro
 
 import React, { useState, useEffect } from 'react';
-import './LoginPage.css';
+import './PaginaInicioSesion.css';
 import moviumIcon from './assets/movium-icono.png';
 import moviumLogo from './assets/movium-logo.png';
-import { API_BASE_URL } from './config';
+import { API_BASE_URL } from './configuracion';
 
-// Límites básicos
-const MAX_USERNAME_LENGTH = 18;
-const MAX_PASSWORD_LENGTH = 50;
+// Limites basicos
+const MAX_USUARIO = 18;
+const MAX_CLAVE = 50;
 
 function LoginPage() {
   // Estado para cambiar entre login y registro
-  const [vistaLogin, setVistaLogin] = useState(true);
+  const [esLogin, setEsLogin] = useState(true);
   // Campo de usuario del formulario de login
-  const [nombreUsuarioLogin, setNombreUsuarioLogin] = useState('');
+  const [usuarioLogin, setUsuarioLogin] = useState('');
   // Contraseña compartida entre ambas vistas
-  const [contrasena, setContrasena] = useState('');
+  const [clave, setClave] = useState('');
   // Campo de usuario del formulario de registro
-  const [nombreUsuario, setNombreUsuario] = useState('');
+  const [usuarioRegistro, setUsuarioRegistro] = useState('');
   // Mensaje de error o aviso
   const [mensaje, setMensaje] = useState('');
   // Tema guardado en localStorage
-  const [tema, setTema] = useState(() => {
-    const temaGuardado = localStorage.getItem('movium_theme');
-    return temaGuardado === 'light' ? 'light' : 'dark';
-  });
+  const temaGuardado = localStorage.getItem('movium_theme');
+  const [tema, setTema] = useState(temaGuardado === 'light' ? 'light' : 'dark');
   // Mostrar/ocultar texto de contraseña
-  const [mostrarContrasena, setMostrarContrasena] = useState(false);
+  const [mostrarClave, setMostrarClave] = useState(false);
 
   // Cambiar tema y persistir selección
   const toggleTheme = () => {
@@ -44,28 +42,28 @@ function LoginPage() {
   }, [tema]);
 
   // Login con nombre de usuario y contraseña
-  const handleLoginSubmit = async (e) => {
+  const enviarLogin = async (e) => {
     e.preventDefault();
     setMensaje('');
-    const urlLogin = `${API_BASE_URL}login.php`;
+    const urlLogin = `${API_BASE_URL}iniciar_sesion.php`;
 
     try {
       // Enviar credenciales al backend
-      const response = await fetch(urlLogin, {
+      const respuesta = await fetch(urlLogin, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nombre_usuario: nombreUsuarioLogin, password: contrasena }),
+        body: JSON.stringify({ nombre_usuario: usuarioLogin, password: clave }),
       });
-      const data = await response.json();
+      const datos = await respuesta.json();
 
-      if (response.ok) {
+      if (respuesta.ok) {
         // Guardar sesión y entrar a la app
-        localStorage.setItem('movium_token', data.token);
-        localStorage.setItem('movium_user', JSON.stringify(data.usuario)); 
+        localStorage.setItem('movium_token', datos.token);
+        localStorage.setItem('movium_user', JSON.stringify(datos.usuario));
         window.location.href = '/';
       } else {
         // Mostrar mensaje devuelto por API
-        setMensaje(`Error: ${data.mensaje}`);
+        setMensaje(`Error: ${datos.mensaje}`);
       }
       
     } catch (error) {
@@ -75,7 +73,7 @@ function LoginPage() {
   };
 
   // Registro con validaciones básicas en cliente
-  const handleRegisterSubmit = async (e) => {
+  const enviarRegistro = async (e) => {
     e.preventDefault();
     setMensaje('');
 
@@ -85,61 +83,61 @@ function LoginPage() {
     const regexEspecial = /\W/;
 
     // Validaciones de nombre
-    if (nombreUsuario.length < 4) {
+     if (usuarioRegistro.length < 4) {
        setMensaje('El nombre de usuario debe tener al menos 4 caracteres.');
        return;
     }
-    if (nombreUsuario.length > MAX_USERNAME_LENGTH) {
-       setMensaje(`El nombre de usuario no puede tener más de ${MAX_USERNAME_LENGTH} caracteres.`);
+     if (usuarioRegistro.length > MAX_USUARIO) {
+       setMensaje(`El nombre de usuario no puede tener más de ${MAX_USUARIO} caracteres.`);
        return;
     }
     
      // Validaciones de contraseña
-    if (contrasena.length < longitudMinima) {
+    if (clave.length < longitudMinima) {
       setMensaje(`La contraseña debe tener al menos ${longitudMinima} caracteres.`);
       return;
     }
-    if (contrasena.length > MAX_PASSWORD_LENGTH) {
-      setMensaje(`La contraseña no puede tener más de ${MAX_PASSWORD_LENGTH} caracteres.`);
+    if (clave.length > MAX_CLAVE) {
+      setMensaje(`La contraseña no puede tener más de ${MAX_CLAVE} caracteres.`);
        return;
     }
 
-    if (!regexNumero.test(contrasena)) {
+    if (!regexNumero.test(clave)) {
       setMensaje("La contraseña debe contener al menos un número.");
       return;
     }
-    if (!regexEspecial.test(contrasena)) {
+    if (!regexEspecial.test(clave)) {
       setMensaje("La contraseña debe contener al menos un carácter especial (ej: !@#$...).");
       return;
     }
 
     // Enviar datos de registro
-    const urlRegistro = `${API_BASE_URL}register.php`;
+    const urlRegistro = `${API_BASE_URL}registrarse.php`;
     try {
-      const response = await fetch(urlRegistro, {
+      const respuesta = await fetch(urlRegistro, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          nombre_usuario: nombreUsuario,
-          password: contrasena,
+          nombre_usuario: usuarioRegistro,
+          password: clave,
         }),
       });
-      const data = await response.json();
+      const datos = await respuesta.json();
 
-      if (response.ok) { 
+      if (respuesta.ok) {
         // Si backend devuelve token, entrar directo
-        if (data.token && data.usuario) {
-            localStorage.setItem('movium_token', data.token);
-            localStorage.setItem('movium_user', JSON.stringify(data.usuario)); 
+        if (datos.token && datos.usuario) {
+            localStorage.setItem('movium_token', datos.token);
+            localStorage.setItem('movium_user', JSON.stringify(datos.usuario));
             window.location.href = '/';
         } else {
             // Si no, mostrar aviso y volver a login
             setMensaje('¡Registro completado! Ahora puedes iniciar sesión.');
             cambiarVista(true);
         }
-      } else { 
+      } else {
         // Mensaje de validación del backend
-        setMensaje(`Error en el registro: ${data.mensaje}`);
+        setMensaje(`Error en el registro: ${datos.mensaje}`);
       }
     } catch (error) {
       // Error de conexión
@@ -149,18 +147,18 @@ function LoginPage() {
 
   // Cambiar de vista y limpiar formulario
   const cambiarVista = (esLogin) => {
-    setVistaLogin(esLogin);
-    setNombreUsuario('');
-    setNombreUsuarioLogin('');
-    setContrasena('');
+    setEsLogin(esLogin);
+    setUsuarioRegistro('');
+    setUsuarioLogin('');
+    setClave('');
     setMensaje('');
-    setMostrarContrasena(false);
+    setMostrarClave(false);
   };
 
   return (
     <div className="page-container">
       {/* Botón de tema en la esquina superior */}
-      <button onClick={toggleTheme} className="theme-toggle" aria-label={`Cambiar a tema ${tema === 'dark' ? 'claro' : 'oscuro'}`}>
+      <button onClick={toggleTheme} className="theme-toggle">
         <span className={`theme-icon sun ${tema === 'light' ? 'active' : ''}`}>☀️</span>
         <span className={`theme-icon moon ${tema === 'dark' ? 'active' : ''}`}>🌙</span>
       </button>
@@ -174,38 +172,42 @@ function LoginPage() {
         </div>
 
         <div className="panel-derecho">
-          {vistaLogin ? (
+          {esLogin ? (
             // Vista de login
-            <form onSubmit={handleLoginSubmit} className="login-form-view">
+            <form onSubmit={enviarLogin} className="login-form-view">
                <h2>Iniciar Sesión</h2>
 
               <div className="input-wrapper">
                 <input
                   type="text"
+                  id="login-username"
+                  name="login-username"
                   placeholder="Nombre de usuario"
-                  value={nombreUsuarioLogin}
-                  onChange={(e) => setNombreUsuarioLogin(e.target.value)}
+                  value={usuarioLogin}
+                  onChange={(e) => setUsuarioLogin(e.target.value)}
                   minLength="4"
-                  maxLength={MAX_USERNAME_LENGTH}
+                  maxLength={MAX_USUARIO}
                   required
                 />
               </div>
 
               <div className="password-wrapper">
                 <input
-                  type={mostrarContrasena ? 'text' : 'password'}
+                  type={mostrarClave ? 'text' : 'password'}
+                  id="login-password"
+                  name="login-password"
                   placeholder="Contraseña"
-                  value={contrasena}
-                  onChange={(e) => setContrasena(e.target.value)}
+                  value={clave}
+                  onChange={(e) => setClave(e.target.value)}
                   required
                   minLength="4" 
-                  maxLength={MAX_PASSWORD_LENGTH}
+                  maxLength={MAX_CLAVE}
                 />
                 <span
                   className="password-toggle"
-                  onClick={() => setMostrarContrasena(!mostrarContrasena)}
+                  onClick={() => setMostrarClave(!mostrarClave)}
                 >
-                  {mostrarContrasena ? 'Ocultar' : 'Mostrar'}
+                  {mostrarClave ? 'Ocultar' : 'Mostrar'}
                 </span>
               </div>
 
@@ -222,36 +224,40 @@ function LoginPage() {
             </form>
             ) : (
             // Vista de registro
-            <form onSubmit={handleRegisterSubmit} className="register-form-view">
+            <form onSubmit={enviarRegistro} className="register-form-view">
               <h2>Crear Cuenta</h2>
 
               <div className="input-wrapper">
                 <input
                   type="text"
+                  id="register-username"
+                  name="register-username"
                   placeholder="Nombre de usuario"
-                  value={nombreUsuario}
-                  onChange={(e) => setNombreUsuario(e.target.value)}
+                  value={usuarioRegistro}
+                  onChange={(e) => setUsuarioRegistro(e.target.value)}
                   required
-                  maxLength={MAX_USERNAME_LENGTH}
+                  maxLength={MAX_USUARIO}
                 />
               </div>
 
               <div className="password-wrapper">
                 <input
-                  type={mostrarContrasena ? 'text' : 'password'}
+                  type={mostrarClave ? 'text' : 'password'}
+                  id="register-password"
+                  name="register-password"
                   placeholder="Contraseña"
-                  value={contrasena}
-                  onChange={(e) => setContrasena(e.target.value)}
+                  value={clave}
+                  onChange={(e) => setClave(e.target.value)}
                   required
                   minLength="6"
-                  maxLength={MAX_PASSWORD_LENGTH}
+                  maxLength={MAX_CLAVE}
                   title="Mínimo 6 caracteres, 1 número y 1 carácter especial."
                 />
                 <span
                   className="password-toggle"
-                  onClick={() => setMostrarContrasena(!mostrarContrasena)}
+                  onClick={() => setMostrarClave(!mostrarClave)}
                 >
-                  {mostrarContrasena ? 'Ocultar' : 'Mostrar'}
+                  {mostrarClave ? 'Ocultar' : 'Mostrar'}
                 </span>
               </div>
 

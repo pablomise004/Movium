@@ -4,13 +4,19 @@
 // Cabeceras para peticiones desde frontend
 header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json; charset=UTF-8");
-header("Access-Control-Allow-Methods: POST");
+header("Access-Control-Allow-Methods: POST, OPTIONS");
 header("Access-Control-Max-Age: 3600");
 header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
 
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit();
+}
+
 // Cargar conexion y JWT
-require_once '../config/database.php';
+require_once '../config/base_de_datos.php';
 require_once '../vendor/autoload.php';
+require_once '../config/configuracion_jwt.php';
 use \Firebase\JWT\JWT;
 
 // Preparar conexion a BD y leer body JSON
@@ -18,17 +24,11 @@ $baseDatos = new Database();
 $conexion = $baseDatos->getConnection();
 $datos = json_decode(file_get_contents("php://input"));
 
-// Helper para centralizar errores
-function responderError($codigo, $mensaje)
-{
-    http_response_code($codigo);
-    echo json_encode(array("mensaje" => $mensaje));
-    die();
-}
-
 // Validar campos minimos
 if (empty($datos->nombre_usuario) || empty($datos->password)) {
-    responderError(400, "Datos incompletos. Faltan usuario o contraseña.");
+    http_response_code(400);
+    echo json_encode(array("mensaje" => "Datos incompletos. Faltan usuario o contraseña."));
+    die();
 }
 
 // Limpiar datos de entrada
@@ -36,24 +36,34 @@ $nombreUsuario = htmlspecialchars(strip_tags($datos->nombre_usuario));
 $contrasena = htmlspecialchars(strip_tags($datos->password));
 
 // Validar formato y seguridad
-if (mb_strlen($nombreUsuario, 'UTF-8') > 18) {
-    responderError(400, "El nombre de usuario no puede tener más de 18 caracteres.");
+if (strlen($nombreUsuario) > 18) {
+    http_response_code(400);
+    echo json_encode(array("mensaje" => "El nombre de usuario no puede tener más de 18 caracteres."));
+    die();
 }
 
 if (strlen($contrasena) > 50) {
-    responderError(400, "La contraseña no puede tener más de 50 caracteres.");
+    http_response_code(400);
+    echo json_encode(array("mensaje" => "La contraseña no puede tener más de 50 caracteres."));
+    die();
 }
 
 if (strlen($contrasena) < 6) {
-    responderError(400, "La contraseña debe tener al menos 6 caracteres.");
+    http_response_code(400);
+    echo json_encode(array("mensaje" => "La contraseña debe tener al menos 6 caracteres."));
+    die();
 }
 
 if (!preg_match('/[0-9]/', $contrasena)) {
-    responderError(400, "La contraseña debe contener al menos un número.");
+    http_response_code(400);
+    echo json_encode(array("mensaje" => "La contraseña debe contener al menos un número."));
+    die();
 }
 
-if (!preg_match('/\W/', $contrasena)) {
-    responderError(400, "La contraseña debe contener al menos un carácter especial (ej: !@#$...).");
+if (!preg_match('/[!@#$%^&*()\-_+=.,;:?]/', $contrasena)) {
+    http_response_code(400);
+    echo json_encode(array("mensaje" => "La contraseña debe contener al menos un carácter especial (ej: !@#$...)."));
+    die();
 }
 
 // Verificar si ya existe ese nombre de usuario
@@ -63,7 +73,9 @@ $stmtUsuario->bindParam(':nombre_usuario', $nombreUsuario);
 $stmtUsuario->execute();
 
 if ($stmtUsuario->rowCount() > 0) {
-    responderError(409, "Ese nombre de usuario ya está en uso.");
+    http_response_code(409);
+    echo json_encode(array("mensaje" => "Ese nombre de usuario ya está en uso."));
+    die();
 }
 
 // Hashear contraseña antes de guardar
@@ -76,14 +88,16 @@ $stmtInsert->bindParam(':nombre_usuario', $nombreUsuario);
 $stmtInsert->bindParam(':password_hash', $hashContrasena);
 
 if (!$stmtInsert->execute()) {
-    responderError(503, "No se pudo registrar al usuario. Error del servidor.");
+    http_response_code(503);
+    echo json_encode(array("mensaje" => "No se pudo registrar al usuario. Error del servidor."));
+    die();
 }
 
 // Recuperar id del usuario recien creado
 $idUsuarioNuevo = $conexion->lastInsertId();
 
 // Generar token para auto-login despues de registro
-$claveSecreta = "k#f9JLz@p7W!bN8^vG2*qR5sT&eD4hX%uY1aC6oP3zM0xQñ";
+$claveSecreta = JWT_SECRET;
 
 $payload = array(
     // Emitido ahora

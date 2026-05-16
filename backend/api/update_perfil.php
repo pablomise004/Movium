@@ -1,49 +1,47 @@
 <?php
-// ---- backend/api/update_perfil.php (CON VALIDACIÓN DE ALTURA/PESO MEJORADA) ----
+// Actualizar perfil del usuario
 
-// --- Configuración de Cabeceras ---
+// Cabeceras para peticiones desde el frontend
 header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json; charset=UTF-8");
 header("Access-Control-Allow-Methods: POST, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
 
-// --- Manejo de Solicitud OPTIONS (Preflight) ---
+// Manejo de preflight
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
     exit(); 
 }
 
-// --- Dependencias ---
-require_once '../config/database.php';
-require_once '../vendor/autoload.php'; 
+// Dependencias
+require_once '../config/base_de_datos.php';
+require_once '../vendor/autoload.php';
+require_once '../config/configuracion_jwt.php'; 
 
-// --- Namespaces ---
+// Namespaces
 use \Firebase\JWT\JWT;
 use \Firebase\JWT\Key;
 
-// --- Constantes ---
-define("JWT_SECRET_KEY", "k#f9JLz@p7W!bN8^vG2*qR5sT&eD4hX%uY1aC6oP3zM0xQñ"); 
+// Constantes
+// JWT_SECRET viene de configuracion_jwt.php 
 
-// ==================================================================
-// PASO 1: Validación de Token JWT y Obtención de ID de Usuario
-// (Sin cambios)
-// ==================================================================
-$usuario_id = null;
-$jwt = null;
-$authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? null; 
+// Validar token y obtener ID de usuario
+$id_usuario = null;
+$token = null;
+$cabecera = $_SERVER['HTTP_AUTHORIZATION'] ?? null; 
 
-if ($authHeader) {
-    $parts = explode(" ", $authHeader);
-    if (count($parts) === 2 && $parts[0] === 'Bearer') {
-        $jwt = $parts[1];
+if ($cabecera) {
+    $partes = explode(" ", $cabecera);
+    if (count($partes) === 2 && $partes[0] === 'Bearer') {
+        $token = $partes[1];
     }
 }
 
-if ($jwt) {
+if ($token) {
     try {
-        $decoded = JWT::decode($jwt, new Key(JWT_SECRET_KEY, 'HS256'));
-        $usuario_id = $decoded->data->id ?? null;
-        if (!$usuario_id) {
+        $decodificado = JWT::decode($token, new Key(JWT_SECRET, 'HS256'));
+        $id_usuario = $decodificado->data->id ?? null;
+        if (!$id_usuario) {
              throw new Exception("ID de usuario no encontrado en el token.");
         }
     } catch (Exception $e) {
@@ -57,26 +55,24 @@ if ($jwt) {
     exit();
 }
 
-// ==================================================================
-// PASO 2: Obtener y Validar Datos de Entrada (JSON)
-// ==================================================================
-$data = json_decode(file_get_contents("php://input"));
+// Obtener y validar datos de entrada
+$datosEntrada = json_decode(file_get_contents("php://input"));
 
-if ($data === null && json_last_error() !== JSON_ERROR_NONE) {
+if ($datosEntrada === null && json_last_error() !== JSON_ERROR_NONE) {
     http_response_code(400); // Bad Request
     echo json_encode(["mensaje" => "Error al decodificar los datos JSON de entrada."]);
     exit();
 }
 
 // Extraer datos
-$correo = trim($data->correo_electronico ?? '');
-$nombre_real = trim($data->nombre_real ?? '');
-$apellidos = trim($data->apellidos ?? '');
-$fecha_nac = $data->fecha_nacimiento ?? null; 
-$altura = $data->altura_cm ?? null;
-$peso = $data->peso_kg ?? null;
-$telefono = trim($data->telefono ?? '');
-$direccion = trim($data->direccion ?? '');
+$correo = trim($datosEntrada->correo_electronico ?? '');
+$nombre_real = trim($datosEntrada->nombre_real ?? '');
+$apellidos = trim($datosEntrada->apellidos ?? '');
+$fecha_nac = $datosEntrada->fecha_nacimiento ?? null; 
+$altura = $datosEntrada->altura_cm ?? null;
+$peso = $datosEntrada->peso_kg ?? null;
+$telefono = trim($datosEntrada->telefono ?? '');
+$direccion = trim($datosEntrada->direccion ?? '');
 
 // --- Validación de Reglas de Negocio (¡MODIFICADA!) ---
 $errores_validacion = [];
@@ -134,10 +130,12 @@ if ($correo !== null && $correo !== "" && !filter_var($correo, FILTER_VALIDATE_E
 if ($telefono !== null && $telefono !== "" && (strlen($telefono) < 9 || strlen($telefono) > 15 || !ctype_digit($telefono) )) {
     $errores_validacion[] = "El teléfono debe tener entre 9 y 15 dígitos numéricos.";
 }
-// Longitud de texto: (sin cambios)
-if (mb_strlen($nombre_real, 'UTF-8') > 100) { $errores_validacion[] = "El nombre no puede exceder los 100 caracteres."; }
-if (mb_strlen($apellidos, 'UTF-8') > 150) { $errores_validacion[] = "Los apellidos no pueden exceder los 150 caracteres."; }
-if (mb_strlen($direccion, 'UTF-8') > 255) { $errores_validacion[] = "La dirección no puede exceder los 255 caracteres."; }
+// Longitud de texto: usamos strlen normal porque mb_strlen requiere la extension mbstring
+// que no siempre esta activada en Windows. strlen cuenta bytes no caracteres unicode
+// pero para validar longitudes aproximadas nos vale perfectamente
+if (strlen($nombre_real) > 100) { $errores_validacion[] = "El nombre no puede exceder los 100 caracteres."; }
+if (strlen($apellidos) > 150) { $errores_validacion[] = "Los apellidos no pueden exceder los 150 caracteres."; }
+if (strlen($direccion) > 255) { $errores_validacion[] = "La dirección no puede exceder los 255 caracteres."; }
 
 // Si hubo errores de validación, devolverlos
 if (!empty($errores_validacion)) {
@@ -151,21 +149,21 @@ if (!empty($errores_validacion)) {
 // PASO 3: Lógica de Actualización en Base de Datos
 // (Sin cambios)
 // ==================================================================
-$db = null; 
+$conexion = null; 
 
 try {
     $database = new Database();
-    $db = $database->getConnection();
-    if (!$db) {
+    $conexion = $database->getConnection();
+    if (!$conexion) {
          throw new Exception("No se pudo conectar a la base de datos.", 503); // Service Unavailable
     }
 
     // --- Comprobación de Correo Duplicado (ANTES de la transacción) ---
     if ($correo !== null && $correo !== "") {
         $check_email_query = "SELECT id FROM usuarios WHERE correo_electronico = :correo AND id != :usuario_id LIMIT 1";
-        $check_email_stmt = $db->prepare($check_email_query);
+        $check_email_stmt = $conexion->prepare($check_email_query);
         $check_email_stmt->bindParam(':correo', $correo, PDO::PARAM_STR);
-        $check_email_stmt->bindParam(':usuario_id', $usuario_id, PDO::PARAM_INT);
+        $check_email_stmt->bindParam(':usuario_id', $id_usuario, PDO::PARAM_INT);
         $check_email_stmt->execute();
         if ($check_email_stmt->rowCount() > 0) {
             http_response_code(409); // Conflict
@@ -175,14 +173,14 @@ try {
     }
 
     // --- Inicio de la Transacción ---
-    $db->beginTransaction();
+    $conexion->beginTransaction();
     
     // 1. Actualizar 'usuarios' (correo electrónico)
-    if (isset($data->correo_electronico)) { 
+    if (isset($datosEntrada->correo_electronico)) { 
         $query_user = "UPDATE usuarios SET correo_electronico = :correo WHERE id = :usuario_id";
-        $stmt_user = $db->prepare($query_user);
+        $stmt_user = $conexion->prepare($query_user);
         $stmt_user->bindValue(":correo", ($correo === "" ? null : $correo), PDO::PARAM_STR | PDO::PARAM_NULL);
-        $stmt_user->bindParam(":usuario_id", $usuario_id, PDO::PARAM_INT);
+        $stmt_user->bindParam(":usuario_id", $id_usuario, PDO::PARAM_INT);
         if (!$stmt_user->execute()) {
              throw new Exception("Error al actualizar la tabla de usuarios: " . implode(" - ", $stmt_user->errorInfo()), 500);
         }
@@ -206,10 +204,10 @@ try {
             telefono = VALUES(telefono),
             direccion = VALUES(direccion)
     ";
-    $stmt_profile = $db->prepare($query_profile);
+    $stmt_profile = $conexion->prepare($query_profile);
 
     // Bindear todos los parámetros
-    $stmt_profile->bindParam(":usuario_id", $usuario_id, PDO::PARAM_INT);
+    $stmt_profile->bindParam(":usuario_id", $id_usuario, PDO::PARAM_INT);
     $stmt_profile->bindValue(":nombre_real", ($nombre_real === "" ? null : $nombre_real), PDO::PARAM_STR | PDO::PARAM_NULL);
     $stmt_profile->bindValue(":apellidos", ($apellidos === "" ? null : $apellidos), PDO::PARAM_STR | PDO::PARAM_NULL);
     $stmt_profile->bindValue(":fecha_nac", ($fecha_nac === "" || $fecha_nac === null ? null : $fecha_nac), PDO::PARAM_STR | PDO::PARAM_NULL);
@@ -223,7 +221,7 @@ try {
     }
 
     // --- Confirmar Transacción ---
-    $db->commit();
+    $conexion->commit();
     
     // --- Respuesta Exitosa ---
     http_response_code(200); // OK
@@ -231,8 +229,8 @@ try {
 
 } catch (Exception $e) {
     // --- Manejo de Errores ---
-    if ($db && $db->inTransaction()) {
-        $db->rollBack();
+    if ($conexion && $conexion->inTransaction()) {
+        $conexion->rollBack();
     }
     $codigoError = (is_numeric($e->getCode()) && $e->getCode() >= 400 && $e->getCode() < 600) ? $e->getCode() : 500;
     http_response_code($codigoError);
@@ -242,6 +240,6 @@ try {
     ]);
 } finally {
     // --- Limpieza ---
-    $db = null;
+    $conexion = null;
 }
 ?>
