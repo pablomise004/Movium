@@ -1,7 +1,4 @@
 <?php
-// Actualizar rutina
-
-// Cabeceras para peticiones desde el frontend
 header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json; charset=UTF-8");
 header("Access-Control-Allow-Methods: POST, OPTIONS");
@@ -12,14 +9,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-// Cargar conexion y JWT
 require_once '../config/base_de_datos.php';
 require_once '../vendor/autoload.php';
 require_once '../config/configuracion_jwt.php';
 use \Firebase\JWT\JWT;
 use \Firebase\JWT\Key;
 
-// Validar token y extraer usuario
 $clave_secreta = JWT_SECRET;
 $token = null;
 $cabecera = $_SERVER['HTTP_AUTHORIZATION'] ?? null;
@@ -43,11 +38,6 @@ if ($token) {
     die();
 }
 
-// Limites de entrada
-define("MAX_NOMBRE_RUTINA", 38);
-define("MAX_DIAS_SEMANA", 60);
-
-// Leer datos JSON
 $datos = json_decode(file_get_contents("php://input"));
 if (empty($datos->id) || !isset($datos->nombre)) {
     http_response_code(400);
@@ -59,43 +49,38 @@ $id_rutina = $datos->id;
 $nombre = trim($datos->nombre);
 $dias = isset($datos->dias_semana) ? trim($datos->dias_semana) : null;
 
-// Validaciones
-if (mb_strlen($nombre, 'UTF-8') === 0) {
+if (strlen($nombre) === 0) {
     http_response_code(400);
     echo json_encode(array("mensaje" => "El nombre de la rutina no puede estar vacío."));
     die();
 }
-if (mb_strlen($nombre, 'UTF-8') > MAX_NOMBRE_RUTINA) {
+if (strlen($nombre) > 38) {
     http_response_code(400);
-    echo json_encode(array("mensaje" => "El nombre no puede exceder los " . MAX_NOMBRE_RUTINA . " caracteres."));
+    echo json_encode(array("mensaje" => "El nombre no puede exceder los 38 caracteres."));
     die();
 }
-if ($dias !== null && mb_strlen($dias, 'UTF-8') > MAX_DIAS_SEMANA) {
+if ($dias !== null && strlen($dias) > 60) {
     http_response_code(400);
-    echo json_encode(array("mensaje" => "La descripción/días no puede exceder los " . MAX_DIAS_SEMANA . " caracteres."));
+    echo json_encode(array("mensaje" => "La descripción/días no puede exceder los 60 caracteres."));
     die();
 }
 
-// ==================================================================
-// Actualizar la rutina
 $bd = new Database();
 $conexion = $bd->getConnection();
 
+$consulta_info = "SELECT id FROM rutinas WHERE id = :rutina_id AND usuario_id = :usuario_id LIMIT 1";
+$stmt_info = $conexion->prepare($consulta_info);
+$stmt_info->bindParam(":rutina_id", $id_rutina, PDO::PARAM_INT);
+$stmt_info->bindParam(":usuario_id", $id_usuario, PDO::PARAM_INT);
+$stmt_info->execute();
+
+if (!$stmt_info->fetch(PDO::FETCH_ASSOC)) {
+    http_response_code(404);
+    echo json_encode(array("mensaje" => "Rutina no encontrada o no te pertenece."));
+    die();
+}
+
 try {
-    // Validar propiedad
-    $consulta_info = "SELECT id FROM rutinas
-                      WHERE id = :rutina_id AND usuario_id = :usuario_id
-                      LIMIT 1";
-    $stmt_info = $conexion->prepare($consulta_info);
-    $stmt_info->bindParam(":rutina_id", $id_rutina, PDO::PARAM_INT);
-    $stmt_info->bindParam(":usuario_id", $id_usuario, PDO::PARAM_INT);
-    $stmt_info->execute();
-
-    if (!$stmt_info->fetch(PDO::FETCH_ASSOC)) {
-        throw new Exception("Rutina no encontrada o no te pertenece.", 404);
-    }
-
-    // Actualizar la rutina
     $consulta_update = "UPDATE rutinas
                         SET
                           nombre = :nombre,
@@ -121,11 +106,9 @@ try {
     ));
 
 } catch (Exception $e) {
-    $codigo = $e->getCode() == 404 ? 404 : 500;
-    http_response_code($codigo);
+    http_response_code(500);
     echo json_encode(array(
-        "mensaje" => "Error al actualizar la rutina.",
-        "error" => $e->getMessage()
+        "mensaje" => "Error al actualizar la rutina."
     ));
 }
 ?>

@@ -1,7 +1,4 @@
 <?php
-// Borrar ejercicio de una rutina
-
-// Cabeceras para peticiones desde el frontend
 header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json; charset=UTF-8");
 header("Access-Control-Allow-Methods: POST, OPTIONS"); 
@@ -12,14 +9,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-// Cargar conexion y JWT
 require_once '../config/base_de_datos.php';
 require_once '../vendor/autoload.php';
 require_once '../config/configuracion_jwt.php';
 use \Firebase\JWT\JWT;
 use \Firebase\JWT\Key;
 
-// Validar token y extraer usuario
 $clave_secreta = JWT_SECRET;
 $token = null;
 $cabecera = $_SERVER['HTTP_AUTHORIZATION'] ?? null;
@@ -35,7 +30,6 @@ if ($token) {
     } catch (Exception $e) { http_response_code(401); echo json_encode(array("mensaje" => "Acceso denegado. Token inválido.")); die(); }
 } else { http_response_code(401); echo json_encode(array("mensaje" => "Acceso denegado. No se proporcionó token.")); die(); }
 
-// Obtener ID a borrar
 $datos = json_decode(file_get_contents("php://input"));
 
 if (empty($datos->id)) {
@@ -45,14 +39,11 @@ if (empty($datos->id)) {
 }
 $id_ejercicio_rutina = $datos->id;
 
-// Borrar y reordenar
 $bd = new Database();
 $conexion = $bd->getConnection();
 
 try {
-    // Verificar propiedad
-    $consulta_info = "SELECT 
-                     re.rutina_id, re.orden 
+    $consulta_info = "SELECT re.rutina_id
                    FROM rutina_ejercicios re
                    JOIN rutinas ru ON re.rutina_id = ru.id
                    WHERE re.id = :ejercicio_rutina_id AND ru.usuario_id = :usuario_id
@@ -67,30 +58,20 @@ try {
     }
 
     $id_rutina = $datos['rutina_id'];
-    $orden_borrado = $datos['orden'];
 
     // Borrar el ejercicio (ON DELETE CASCADE borra hijos)
     $consulta_borrar = "DELETE FROM rutina_ejercicios WHERE id = :ejercicio_rutina_id";
     $stmt_delete = $conexion->prepare($consulta_borrar);
     $stmt_delete->bindParam(":ejercicio_rutina_id", $id_ejercicio_rutina, PDO::PARAM_INT);
     $stmt_delete->execute();
-    
-    // Reordenar
-    $consulta_reorden = "UPDATE rutina_ejercicios 
-                      SET orden = orden - 1 
-                      WHERE rutina_id = :rutina_id AND orden > :orden_borrado";
-    $stmt_reorder = $conexion->prepare($consulta_reorden);
-    $stmt_reorder->bindParam(":rutina_id", $id_rutina, PDO::PARAM_INT);
-    $stmt_reorder->bindParam(":orden_borrado", $orden_borrado, PDO::PARAM_INT);
-    $stmt_reorder->execute();
 
     // Devolver la lista actualizada
-    $consulta_ejercicios = "SELECT re.id, re.ejercicio_id, re.orden,
+    $consulta_ejercicios = "SELECT re.id, re.ejercicio_id,
                                 ej.nombre as nombre_ejercicio, ej.grupo_muscular, ej.tipo
                          FROM rutina_ejercicios re
                          JOIN ejercicios ej ON re.ejercicio_id = ej.id
                          WHERE re.rutina_id = :rutina_id
-                         ORDER BY re.orden ASC";
+                         ORDER BY re.id ASC";
     $stmt_ejercicios = $conexion->prepare($consulta_ejercicios);
     $stmt_ejercicios->bindParam(":rutina_id", $id_rutina, PDO::PARAM_INT);
     $stmt_ejercicios->execute();
@@ -105,7 +86,6 @@ try {
         }
         $placeholders = implode(',', $marcadores);
         
-        // Consulta 2 (Hijos)
         $consulta_objetivos = "SELECT id, rutina_ejercicio_id, num_serie, 
                                    tipo_rep_objetivo, reps_min_objetivo, reps_max_objetivo,
                                    peso_kg_objetivo, tiempo_min_objetivo, 
@@ -119,7 +99,6 @@ try {
         $stmt_objetivos->execute($ids);
         $objetivos = $stmt_objetivos->fetchAll(PDO::FETCH_ASSOC);
 
-        // Combinar
         $mapa_objetivos = [];
         foreach ($objetivos as $obj) {
             $mapa_objetivos[$obj['rutina_ejercicio_id']][] = $obj;
@@ -140,8 +119,7 @@ try {
     $codigo = $e->getCode() == 404 ? 404 : 500;
     http_response_code($codigo);
     echo json_encode(array(
-        "mensaje" => "Error al borrar el ejercicio.",
-        "error" => $e->getMessage()
+        "mensaje" => "Error al borrar el ejercicio."
     ));
 }
 ?>

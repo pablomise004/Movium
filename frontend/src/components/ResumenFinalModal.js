@@ -1,51 +1,14 @@
-// Modal de resumen final
-
 import React, { useState } from 'react';
 import './RegistrarSerieModal.css'; // Mantenemos el CSS compartido
 
-function ResumenFinalModal({ isOpen: abierto, onClose: cerrar, onConfirm: confirmar, isFinishing: guardando, resumenDatos }) {
-
-  const formatearObjetivoNatural = (obj, tipo) => {
-    if (!obj) return '';
-
-    if (tipo === 'cardio') {
-      const metricas = [];
-      if (obj.tiempo_min_objetivo) metricas.push(`${obj.tiempo_min_objetivo} min`);
-      if (obj.distancia_km_objetivo) metricas.push(`${obj.distancia_km_objetivo} km`);
-
-      if (metricas.length > 2) {
-          return metricas.slice(0, -1).join(', ') + ' y ' + metricas.slice(-1);
-      } else {
-          return metricas.join(' y ');
-      }
-    }
-
-    let textoPrincipal = "";
-    if (obj.tipo_rep_objetivo === 'fallo') {
-      textoPrincipal = "Al Fallo";
-    } else if (obj.tipo_rep_objetivo === 'rango') {
-      textoPrincipal = `${obj.reps_min_objetivo || '?'}-${obj.reps_max_objetivo || '?'} reps`;
-    } else {
-      textoPrincipal = `${obj.reps_min_objetivo || '?'} reps`;
-    }
-
-    if (obj.peso_kg_objetivo != null) {
-      textoPrincipal += ` con ${obj.peso_kg_objetivo} kg`;
-    }
-
-    if (obj.descanso_seg_post != null) {
-      textoPrincipal += ` (${obj.descanso_seg_post}s)`;
-    }
-
-    return textoPrincipal;
-  };
+function ResumenFinalModal({ isOpen, onClose, onConfirm, isFinishing, resumenDatos }) {
 
   const [notas, setNotas] = useState('');
   const MAX_NOTAS_LENGTH = 1000;
 
   const guardar = (e) => {
     e.preventDefault();
-    confirmar(notas);
+    onConfirm(notas);
   };
 
   const manejarNotas = (e) => {
@@ -54,19 +17,19 @@ function ResumenFinalModal({ isOpen: abierto, onClose: cerrar, onConfirm: confir
     }
   };
 
-  if (!abierto) {
+  if (!isOpen) {
     return null;
   }
 
   const hayResumen = Array.isArray(resumenDatos) && resumenDatos.length > 0;
 
   return (
-    <div className="modal-backdrop" onClick={cerrar}>
+    <div className="modal-backdrop" onClick={onClose}>
       <div className="modal-content" style={{ maxHeight: '80vh' }} onClick={(e) => e.stopPropagation()}>
 
         <div className="modal-header">
           <h3>Finalizar Entrenamiento</h3>
-          <button className="modal-close-btn" onClick={cerrar} disabled={guardando}>
+          <button className="modal-close-btn" onClick={onClose} disabled={isFinishing}>
             &times;
           </button>
         </div>
@@ -77,14 +40,12 @@ function ResumenFinalModal({ isOpen: abierto, onClose: cerrar, onConfirm: confir
             <h4>Resumen del Entrenamiento:</h4>
 
             {hayResumen ? (
-              // MAP EXTERIOR: EJERCICIOS
               resumenDatos.map((ejercicio) => (
                 <div className="resumen-ejercicio-grupo" key={ejercicio.nombre}>
                   <div className="resumen-ejercicio-header">
                     <strong>{ejercicio.nombre}</strong>
                   </div>
 
-                  {/* MAP INTERIOR: SERIES */}
                   <ul className="resumen-series-lista">
                     {ejercicio.series.map((serie, index) => (
                       <li key={`${serie.num_serie}_${index}`}>
@@ -135,15 +96,15 @@ function ResumenFinalModal({ isOpen: abierto, onClose: cerrar, onConfirm: confir
               onChange={manejarNotas}
               placeholder="Ej: Me he sentido fuerte hoy..."
               rows="3"
-              disabled={guardando}
+              disabled={isFinishing}
               style={{ minHeight: '60px' }}
               maxLength={MAX_NOTAS_LENGTH}
             ></textarea>
           </div>
 
           <div className="modal-footer">
-            <button type="submit" className="transparent-btn" disabled={guardando}>
-              {guardando ? 'Guardando...' : 'Confirmar y Guardar'}
+            <button type="submit" className="transparent-btn" disabled={isFinishing}>
+              {isFinishing ? 'Guardando...' : 'Confirmar y Guardar'}
             </button>
           </div>
         </form>

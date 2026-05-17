@@ -5,7 +5,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import './RutinaProgreso.css';
 import { Line } from 'react-chartjs-2';
 import 'chart.js/auto';
-import { API_BASE_URL } from './configuracion';
+import { API_BASE_URL } from './config';
 
 function RutinaProgreso() {
   const { id: rutinaId } = useParams();
@@ -23,19 +23,14 @@ function RutinaProgreso() {
       const token = localStorage.getItem('movium_token');
       if (!token) { setError("Error de autenticación."); setCargando(false); return; }
 
-      try {
-        const res = await fetch(`${API_BASE_URL}get_progreso_rutina.php?id=${rutinaId}`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        const datos = await res.json();
-        if (!res.ok) throw new Error(datos.mensaje || "Error al cargar el progreso.");
-        setNombreRutina(datos.rutina_info?.nombre || 'Progreso de Rutina');
-        setDatosGrafica(datos.grafica || []);
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setCargando(false);
-      }
+      const respuesta = await fetch(`${API_BASE_URL}get_progreso_rutina.php?id=${rutinaId}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const datos = await respuesta.json();
+      if (!respuesta.ok) { setError(datos.mensaje || "Error al cargar el progreso."); setCargando(false); return; }
+      setNombreRutina(datos.rutina_info?.nombre || 'Progreso de Rutina');
+      setDatosGrafica(datos.grafica || []);
+      setCargando(false);
     };
     cargarProgreso();
   }, [rutinaId]);
@@ -69,7 +64,7 @@ function RutinaProgreso() {
     ]
   };
 
-  const chartOptions = (titulo) => ({
+  const opcionesGrafica = (titulo) => ({
     responsive: true,
     plugins: {
       legend: { position: 'top' },
@@ -85,12 +80,12 @@ function RutinaProgreso() {
 
       {hayDatosFuerza && (
         <div className="chart-container-progreso">
-          <Line options={chartOptions('Evolución de Fuerza')} data={chartDataFuerza} />
+          <Line options={opcionesGrafica('Evolución de Fuerza')} data={chartDataFuerza} />
         </div>
       )}
       {hayDatosCardio && (
         <div className="chart-container-progreso">
-          <Line options={chartOptions('Evolución de Cardio')} data={chartDataCardio} />
+          <Line options={opcionesGrafica('Evolución de Cardio')} data={chartDataCardio} />
         </div>
       )}
       {!hayDatosFuerza && !hayDatosCardio && (

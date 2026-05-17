@@ -2,43 +2,43 @@ import React from 'react';
 import './ConfirmarBorradoModal.css';
 
 // Modal generico para acciones peligrosas
-function ConfirmarAccionModal({ 
-  isOpen: abierto, 
-  onClose: cerrar, 
-  onConfirm: confirmar, 
-  titulo, 
-  mensaje, 
+function ConfirmarAccionModal({
+  isOpen,
+  onClose,
+  onConfirm,
+  titulo,
+  mensaje,
   textoBotonConfirmar = "Confirmar",
   isConfirmando = false
 }) {
-  if (!abierto) {
+  if (!isOpen) {
     return null;
   }
 
   return (
-    <div className="modal-backdrop-danger" onClick={cerrar}>
+    <div className="modal-backdrop-danger" onClick={onClose}>
       <div className="modal-content-danger" onClick={(e) => e.stopPropagation()}>
-        
+
         <div className="modal-header-danger">
           <h3>{titulo}</h3>
-          <button 
-            className="modal-close-btn-danger" 
-            onClick={cerrar} 
+          <button
+            className="modal-close-btn-danger"
+            onClick={onClose}
             disabled={isConfirmando}
           >
             &times;
           </button>
         </div>
-        
+
         <div className="modal-body-danger">
           <p>{mensaje}</p>
         </div>
-        
+
         <div className="modal-footer-danger">
           <button
             type="button"
             className="btn-cancel-danger"
-            onClick={cerrar}
+            onClick={onClose}
             disabled={isConfirmando}
           >
             Cancelar
@@ -46,7 +46,7 @@ function ConfirmarAccionModal({
           <button
             type="button"
             className="btn-confirm-danger"
-            onClick={confirmar} 
+            onClick={onConfirm}
             disabled={isConfirmando}
           >
             {isConfirmando ? 'Cargando...' : textoBotonConfirmar}

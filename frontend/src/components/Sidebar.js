@@ -1,29 +1,22 @@
-// Menu lateral
 import React from 'react';
-import './BarraLateral.css';
+import './Sidebar.css';
 import moviumIcon from '../assets/movium-icono.png';
-// 1. Importar useLocation además de NavLink
 import { NavLink, useLocation } from 'react-router-dom';
 
 function Sidebar() {
-  // 2. Obtener el objeto location actual
   const ubicacion = useLocation();
 
-  // --- Lógica de Logout (Sin cambios) ---
   const cerrarSesion = () => {
     localStorage.removeItem('movium_token');
     window.location.reload();
   };
 
-  // --- ¡¡FUNCIÓN CORREGIDA!! ---
+  // para que inicio siga activo en las subrutas
   const esInicioActivo = () => {
-    const { pathname } = ubicacion;
-    return pathname === '/' || 
-           pathname.startsWith('/rutina/') || 
-           pathname.startsWith('/sesion/') || 
-           pathname.startsWith('/progreso/');
+    return ubicacion.pathname === '/' ||
+           ubicacion.pathname.startsWith('/rutina') ||
+           ubicacion.pathname.startsWith('/sesion');
   };
-  // --- ¡¡FIN CORRECCIÓN!! ---
 
   return (
     <aside className="app-sidebar">
@@ -35,10 +28,7 @@ function Sidebar() {
         <nav className="sidebar-nav">
           <NavLink
             to="/"
-            className={() =>
-               // Ahora llamará a la función corregida
-               `nav-link ${esInicioActivo() ? 'active' : ''}`
-            }
+            className={() => `nav-link ${esInicioActivo() ? 'active' : ''}`}
           >
             Inicio
           </NavLink>

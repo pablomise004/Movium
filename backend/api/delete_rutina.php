@@ -1,7 +1,4 @@
 <?php
-// Borrar rutina
-
-// Cabeceras para peticiones desde el frontend
 header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json; charset=UTF-8");
 header("Access-Control-Allow-Methods: POST, OPTIONS");
@@ -12,14 +9,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-// Cargar conexion y JWT
 require_once '../config/base_de_datos.php';
 require_once '../vendor/autoload.php';
 require_once '../config/configuracion_jwt.php';
 use \Firebase\JWT\JWT;
 use \Firebase\JWT\Key;
 
-// Validar token y extraer usuario
 $clave_secreta = JWT_SECRET;
 $token = null;
 $cabecera = $_SERVER['HTTP_AUTHORIZATION'] ?? null;
@@ -43,7 +38,6 @@ if ($token) {
     die();
 }
 
-// Obtener ID a borrar
 $datos = json_decode(file_get_contents("php://input"));
 
 if (empty($datos->id)) {
@@ -53,24 +47,23 @@ if (empty($datos->id)) {
 }
 $id_rutina = $datos->id;
 
-// Borrar la rutina
 $bd = new Database();
 $conexion = $bd->getConnection();
 
+$consulta_dueno = "SELECT id FROM rutinas WHERE id = :rutina_id AND usuario_id = :usuario_id";
+$stmt_check = $conexion->prepare($consulta_dueno);
+$stmt_check->bindParam(":rutina_id", $id_rutina, PDO::PARAM_INT);
+$stmt_check->bindParam(":usuario_id", $id_usuario, PDO::PARAM_INT);
+$stmt_check->execute();
+
+if ($stmt_check->rowCount() == 0) {
+    http_response_code(404);
+    echo json_encode(array("mensaje" => "Rutina no encontrada o no te pertenece."));
+    die();
+}
+
 try {
-    // Verificar propiedad
-    $consulta_dueno = "SELECT id FROM rutinas 
-                    WHERE id = :rutina_id AND usuario_id = :usuario_id";
-    $stmt_check = $conexion->prepare($consulta_dueno);
-    $stmt_check->bindParam(":rutina_id", $id_rutina, PDO::PARAM_INT);
-    $stmt_check->bindParam(":usuario_id", $id_usuario, PDO::PARAM_INT);
-    $stmt_check->execute();
-    
-    if ($stmt_check->rowCount() == 0) {
-        throw new Exception("Rutina no encontrada o no te pertenece.", 404);
-    }
-    
-    // Borrar la rutina (CASCADE se encarga de lo demas)
+    // CASCADE borra ejercicios y objetivos asociados
     $consulta_borrar = "DELETE FROM rutinas WHERE id = :rutina_id";
     $stmt_delete = $conexion->prepare($consulta_borrar);
     $stmt_delete->bindParam(":rutina_id", $id_rutina, PDO::PARAM_INT);
@@ -80,11 +73,9 @@ try {
     echo json_encode(array("mensaje" => "Rutina eliminada exitosamente."));
 
 } catch (Exception $e) {
-    $codigo = $e->getCode() == 404 ? 404 : 500;
-    http_response_code($codigo);
+    http_response_code(500);
     echo json_encode(array(
-        "mensaje" => "Error al eliminar la rutina.",
-        "error" => $e->getMessage()
+        "mensaje" => "Error al eliminar la rutina."
     ));
 }
 ?>

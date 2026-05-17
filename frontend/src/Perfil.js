@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import './Perfil.css';
 import iconoPerfil from './assets/mi-perfil.png';
-import { API_BASE_URL } from './configuracion';
+import { API_BASE_URL } from './config';
 
 function Perfil() {
   const [datosForm, setDatosForm] = useState({
@@ -16,7 +16,6 @@ function Perfil() {
   const [mensajeOk, setMensajeOk] = useState(null);
   const hoy = new Date().toISOString().split('T')[0];
 
-  // Bloquea teclas no validas en inputs numericos
   const manejarTeclaNumerica = (e, permitirDecimal = false) => {
     if (e.key === 'e' || e.key === 'E' || e.key === '+' || e.key === '-') {
       e.preventDefault();
@@ -28,7 +27,6 @@ function Perfil() {
     }
   };
 
-  // Cargar datos del perfil al entrar
   useEffect(() => {
     const cargarPerfil = async () => {
       setCargando(true);
@@ -39,29 +37,24 @@ function Perfil() {
         setCargando(false);
         return;
       }
-      try {
-        const respuesta = await fetch(`${API_BASE_URL}get_perfil.php`, {
-          method: 'GET',
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }
-        });
-        const datos = await respuesta.json();
-        if (!respuesta.ok) throw new Error(datos.mensaje || 'No se pudo cargar el perfil.');
-        setDatosForm({
-          nombre_usuario: datos.nombre_usuario || '',
-          correo_electronico: datos.correo_electronico || '',
-          telefono: datos.telefono || '',
-          nombre_real: datos.nombre_real || '',
-          apellidos: datos.apellidos || '',
-          fecha_nacimiento: datos.fecha_nacimiento || '',
-          altura_cm: datos.altura_cm || '',
-          peso_kg: datos.peso_kg || '',
-          direccion: datos.direccion || ''
-        });
-        setCargando(false);
-      } catch (error) {
-        setError(error.message);
-        setCargando(false);
-      }
+      const respuesta = await fetch(`${API_BASE_URL}get_perfil.php`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }
+      });
+      const datos = await respuesta.json();
+      if (!respuesta.ok) { setError(datos.mensaje || 'No se pudo cargar el perfil.'); setCargando(false); return; }
+      setDatosForm({
+        nombre_usuario: datos.nombre_usuario || '',
+        correo_electronico: datos.correo_electronico || '',
+        telefono: datos.telefono || '',
+        nombre_real: datos.nombre_real || '',
+        apellidos: datos.apellidos || '',
+        fecha_nacimiento: datos.fecha_nacimiento || '',
+        altura_cm: datos.altura_cm || '',
+        peso_kg: datos.peso_kg || '',
+        direccion: datos.direccion || ''
+      });
+      setCargando(false);
     };
     cargarPerfil();
   }, []);
@@ -72,7 +65,6 @@ function Perfil() {
     setError(null);
     setMensajeOk(null);
 
-    // Actualizar el campo que corresponda
     if (campo === 'correo_electronico') {
       setDatosForm({ ...datosForm, correo_electronico: valor });
     } else if (campo === 'telefono') {
@@ -96,23 +88,29 @@ function Perfil() {
   const manejarEnvio = async (e) => {
     e.preventDefault();
     setError(null); setMensajeOk(null);
+
+    // Comprueba que el correo tiene al menos el formato algo@algo.algo
+    // no es perfecto pero sirve para detectar errores basicos
+    if (datosForm.correo_electronico && !/\S+@\S+\.\S+/.test(datosForm.correo_electronico)) {
+      setError("Por favor, introduce un formato de correo válido.");
+      return;
+    }
+    // El telefono tiene que ser solo numeros y entre 9 y 15 digitos
+    if (datosForm.telefono && (datosForm.telefono.length < 9 || datosForm.telefono.length > 15 || !/^\d+$/.test(datosForm.telefono))) {
+      setError("El formato del teléfono no es válido.");
+      return;
+    }
+    if (datosForm.altura_cm && (datosForm.altura_cm < 50 || datosForm.altura_cm > 300)) {
+      setError("La altura debe estar entre 50 y 300 cm.");
+      return;
+    }
+    if (datosForm.peso_kg && (datosForm.peso_kg < 30 || datosForm.peso_kg > 300)) {
+      setError("El peso debe estar entre 30 y 300 kg.");
+      return;
+    }
+
     const token = localStorage.getItem('movium_token');
     try {
-      // Comprueba que el correo tiene al menos el formato algo@algo.algo
-      // no es perfecto pero sirve para detectar errores basicos
-      if (datosForm.correo_electronico && !/\S+@\S+\.\S+/.test(datosForm.correo_electronico)) {
-        throw new Error("Por favor, introduce un formato de correo válido.");
-      }
-      // El telefono tiene que ser solo numeros y entre 9 y 15 digitos
-      if (datosForm.telefono && (datosForm.telefono.length < 9 || datosForm.telefono.length > 15 || !/^\d+$/.test(datosForm.telefono))) {
-        throw new Error("El formato del teléfono no es válido.");
-      }
-      if (datosForm.altura_cm && (datosForm.altura_cm < 50 || datosForm.altura_cm > 300)) {
-        throw new Error("La altura debe estar entre 50 y 300 cm.");
-      }
-      if (datosForm.peso_kg && (datosForm.peso_kg < 30 || datosForm.peso_kg > 300)) {
-        throw new Error("El peso debe estar entre 30 y 300 kg.");
-      }
       const respuesta = await fetch(`${API_BASE_URL}update_perfil.php`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
@@ -124,7 +122,6 @@ function Perfil() {
       setTimeout(() => setMensajeOk(null), 3000);
     } catch (error) {
       setError(error.message);
-      setTimeout(() => setError(null), 5000);
     }
   };
 

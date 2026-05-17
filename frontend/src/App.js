@@ -1,10 +1,10 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import LoginPage from './PaginaInicioSesion';
-import AppLayout from './PlantillaApp';
-import Dashboard from './PanelPrincipal';
+import LoginPage from './Login';
+import AppLayout from './AppLayout';
+import PanelPrincipal from './PanelPrincipal';
 import RutinaDetalle from './RutinaDetalle';
-import WorkoutSession from './SesionEntrenamiento';
+import SesionEntrenamiento from './SesionEntrenamiento';
 import RutinaProgreso from './RutinaProgreso';
 import Perfil from './Perfil';
 import Estadisticas from './Estadisticas';
@@ -22,24 +22,19 @@ function RutaProtegida({ pagina }) {
 function App() {
   return (
     <Routes>
-      {/* Ruta de Login */}
-      <Route path="/login" element={<LoginPage />} /> 
-
-      {/* --- Rutas Protegidas --- */}
+      <Route path="/login" element={<LoginPage />} />
       <Route
         path="/"
         element={<RutaProtegida pagina={<AppLayout />} />}
       >
-        <Route index element={<Dashboard />} />
+        <Route index element={<PanelPrincipal />} />
         <Route path="rutina/:id" element={<RutinaDetalle />} />
-        <Route path="sesion/:id" element={<WorkoutSession />} />
+        <Route path="sesion/:id" element={<SesionEntrenamiento />} />
         <Route path="progreso/:id" element={<RutinaProgreso />} />
         <Route path="ayuda" element={<Ayuda />} />
         <Route path="perfil" element={<Perfil />} />
         <Route path="estadisticas" element={<Estadisticas />} />
       </Route>
-
-      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 }

@@ -1,6 +1,4 @@
 <?php
-// Finalizar entrenamiento
-
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: POST, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Authorization");
@@ -19,33 +17,31 @@ use \Firebase\JWT\Key;
 
 $clave_secreta = JWT_SECRET;
 
-// Sacar el token del header
 $id_usuario = null;
-$tokenJWT = null;
+$token = null;
 
 if (isset($_SERVER['HTTP_AUTHORIZATION'])) {
     $partes = explode(" ", $_SERVER['HTTP_AUTHORIZATION']);
     if (count($partes) === 2) {
-        $tokenJWT = $partes[1];
+        $token = $partes[1];
     }
 }
 
-if ($tokenJWT === null) {
+if ($token === null) {
     http_response_code(401);
     echo json_encode(["mensaje" => "No se ha proporcionado token."]);
     exit();
 }
 
 try {
-    $datos_token = JWT::decode($tokenJWT, new Key($clave_secreta, 'HS256'));
-    $id_usuario = $datos_token->data->id;
+    $decodificado = JWT::decode($token, new Key($clave_secreta, 'HS256'));
+    $id_usuario = $decodificado->data->id;
 } catch (Exception $e) {
     http_response_code(401);
     echo json_encode(["mensaje" => "Token no válido o caducado."]);
     exit();
 }
 
-// Leer datos de entrada
 $datos = json_decode(file_get_contents('php://input'));
 
 if (!$datos || !isset($datos->rutina_id) || !is_numeric($datos->rutina_id) || !isset($datos->series) || !is_array($datos->series)) {
@@ -62,13 +58,11 @@ try {
     $bd = new Database();
     $conexion = $bd->getConnection();
 
-    // Crear la sesión de entrenamiento
     $consulta_sesion = "INSERT INTO sesiones_entrenamiento (usuario_id, rutina_id, fecha_inicio, fecha_fin, notas_sesion) VALUES (?, ?, NOW(), NOW(), ?)";
     $stmt_sesion = $conexion->prepare($consulta_sesion);
     $stmt_sesion->execute([$id_usuario, $id_rutina, $notas]);
     $id_sesion = $conexion->lastInsertId();
 
-    // Insertar las series realizadas
     if (!empty($series)) {
         $consulta_serie = "INSERT INTO series_realizadas (sesion_id, ejercicio_id, orden_ejercicio_rutina, num_serie, repeticiones_realizadas, fue_al_fallo, peso_kg_usado, tiempo_min_realizado, distancia_km_realizada, notas_serie) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         $stmt_serie = $conexion->prepare($consulta_serie);
@@ -84,18 +78,16 @@ try {
             $dist     = isset($serie->distancia_km_realizada) ? (float)$serie->distancia_km_realizada : null;
             $notas_serie = isset($serie->notas_serie) ? trim($serie->notas_serie) : null;
 
-            // bindValue explícito para controlar el tipo exacto de cada parámetro
-            // así MySQL no confunde el 0/1 de fue_al_fallo con una cadena de texto
-            $stmt_serie->bindValue(1, $id_sesion,   PDO::PARAM_INT);
-            $stmt_serie->bindValue(2, $id_ej,       PDO::PARAM_INT);
-            $stmt_serie->bindValue(3, $orden,       PDO::PARAM_INT);
-            $stmt_serie->bindValue(4, $num_serie,   PDO::PARAM_INT);
-            $stmt_serie->bindValue(5, $reps,        $reps   === null ? PDO::PARAM_NULL : PDO::PARAM_INT);
-            $stmt_serie->bindValue(6, $fallo,       PDO::PARAM_INT);
-            $stmt_serie->bindValue(7, $peso,        $peso   === null ? PDO::PARAM_NULL : PDO::PARAM_STR);
-            $stmt_serie->bindValue(8, $tiempo,      $tiempo === null ? PDO::PARAM_NULL : PDO::PARAM_INT);
-            $stmt_serie->bindValue(9, $dist,        $dist   === null ? PDO::PARAM_NULL : PDO::PARAM_STR);
-            $stmt_serie->bindValue(10, $notas_serie, $notas_serie === null ? PDO::PARAM_NULL : PDO::PARAM_STR);
+            $stmt_serie->bindValue(1, $id_sesion, PDO::PARAM_INT);
+            $stmt_serie->bindValue(2, $id_ej, PDO::PARAM_INT);
+            $stmt_serie->bindValue(3, $orden, PDO::PARAM_INT);
+            $stmt_serie->bindValue(4, $num_serie, PDO::PARAM_INT);
+            $stmt_serie->bindValue(5, $reps, PDO::PARAM_INT);
+            $stmt_serie->bindValue(6, $fallo, PDO::PARAM_INT);
+            $stmt_serie->bindValue(7, $peso);
+            $stmt_serie->bindValue(8, $tiempo, PDO::PARAM_INT);
+            $stmt_serie->bindValue(9, $dist);
+            $stmt_serie->bindValue(10, $notas_serie);
             $stmt_serie->execute();
         }
     }
@@ -105,6 +97,6 @@ try {
 
 } catch (Exception $e) {
     http_response_code(500);
-    echo json_encode(["mensaje" => "Error al guardar entrenamiento: " . $e->getMessage()]);
+    echo json_encode(["mensaje" => "Error al guardar entrenamiento."]);
 }
 ?>

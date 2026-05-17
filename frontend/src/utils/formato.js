@@ -1,5 +1,3 @@
-// Funciones de formato compartidas entre WorkoutSession, RegistrarSerieModal y RutinaDetalle
-
 export function formatearObjetivo(obj, tipo) {
   if (!obj) return '';
 
@@ -44,13 +42,3 @@ export function formatearTooltip(objetivo, serieReal, tipo) {
   return tooltip;
 }
 
-// Bloquea teclas que generan valores inválidos en <input type="number"> entero
-// (bloquea notación científica 'e/E' y signos +/- y separadores decimales)
-export function bloquearTeclasEntero(e) {
-  if (['e', 'E', '+', '-', '.', ','].includes(e.key)) e.preventDefault();
-}
-
-// Igual pero permite el punto decimal (para campos como peso o distancia)
-export function bloquearTeclasDecimal(e) {
-  if (['e', 'E', '+', '-'].includes(e.key)) e.preventDefault();
-}

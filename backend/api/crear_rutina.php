@@ -1,13 +1,14 @@
 <?php
-// Crear rutina del usuario
-
-// Cabeceras para peticiones desde el frontend
 header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json; charset=UTF-8");
-header("Access-Control-Allow-Methods: POST");
-header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
+header("Access-Control-Allow-Methods: POST, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type, Authorization");
 
-// Cargar conexion y JWT
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit();
+}
+
 require_once '../config/base_de_datos.php';
 require_once '../vendor/autoload.php';
 require_once '../config/configuracion_jwt.php';
@@ -15,7 +16,6 @@ require_once '../config/configuracion_jwt.php';
 use \Firebase\JWT\JWT;
 use \Firebase\JWT\Key;
 
-// Validar token y extraer usuario
 $clave_secreta = JWT_SECRET;
 $token = null;
 $cabecera = $_SERVER['HTTP_AUTHORIZATION'] ?? null;
@@ -30,7 +30,7 @@ if ($token) {
         $id_usuario = $decodificado->data->id;
     } catch (Exception $e) {
         http_response_code(401);
-        echo json_encode(array("mensaje" => "Acceso denegado. Token inválido o expirado.", "error" => $e->getMessage()));
+        echo json_encode(array("mensaje" => "Acceso denegado. Token inválido o expirado."));
         die();
     }
 } else {
@@ -39,35 +39,27 @@ if ($token) {
     die();
 }
 
-// Limites de entrada
-define("MAX_NOMBRE_RUTINA", 38);
-define("MAX_DIAS_SEMANA", 60);
-
-// Leer body JSON
 $datos = json_decode(file_get_contents("php://input"));
 if (empty($datos->nombre_rutina) || empty($id_usuario)) {
     http_response_code(400);
-    echo json_encode(array("mensaje" => "Datos incompletos. Se requiere nombre_rutina y un usuario válido."));
+    echo json_encode(array("mensaje" => "Datos incompletos."));
     die();
 }
 
-// Limpiar datos de entrada
 $nombre = trim($datos->nombre_rutina);
 $dias = isset($datos->dias_semana) ? trim($datos->dias_semana) : null;
 
-// Validar longitudes
-if (strlen($nombre) > MAX_NOMBRE_RUTINA) {
+if (strlen($nombre) > 38) {
     http_response_code(400);
-    echo json_encode(array("mensaje" => "El nombre de la rutina no puede exceder los " . MAX_NOMBRE_RUTINA . " caracteres."));
+    echo json_encode(array("mensaje" => "El nombre de la rutina no puede exceder los 38 caracteres."));
     die();
 }
-if ($dias !== null && strlen($dias) > MAX_DIAS_SEMANA) {
+if ($dias !== null && strlen($dias) > 60) {
     http_response_code(400);
-    echo json_encode(array("mensaje" => "La descripción/días no puede exceder los " . MAX_DIAS_SEMANA . " caracteres."));
+    echo json_encode(array("mensaje" => "La descripción/días no puede exceder los 60 caracteres."));
     die();
 }
 
-// Preparar la conexion a la BBDD
 try {
     $bd = new Database();
     $conexion = $bd->getConnection();
@@ -93,8 +85,7 @@ try {
 } catch (Exception $e) {
     http_response_code(500);
     echo json_encode(array(
-        "mensaje" => "Error en la base de datos.",
-        "error" => $e->getMessage()
+        "mensaje" => "Error en la base de datos."
     ));
 }
 

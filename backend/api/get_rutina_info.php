@@ -1,7 +1,4 @@
 <?php
-// Obtener info de una rutina
-
-// Cabeceras CORS
 header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json; charset=UTF-8");
 header("Access-Control-Allow-Methods: GET, OPTIONS");
@@ -20,10 +17,8 @@ require_once '../config/configuracion_jwt.php';
 use \Firebase\JWT\JWT;
 use \Firebase\JWT\Key;
 
-// Clave secreta
 $clave_secreta = JWT_SECRET;
 
-// Validar token
 $token = null;
 $cabecera = $_SERVER['HTTP_AUTHORIZATION'] ?? null;
 $id_usuario = null;
@@ -48,15 +43,13 @@ if ($token) {
     die();
 }
 
-// Obtener el ID de la rutina desde la URL
 $rutina_id = $_GET['id'] ?? null;
 if (!$rutina_id) {
-    http_response_code(400); // Bad Request
+    http_response_code(400);
     echo json_encode(array("mensaje" => "No se especificó un ID de rutina."));
     die();
 }
 
-// Obtener la info de la rutina
 try {
     $bd = new Database();
     $conexion = $bd->getConnection();
@@ -83,8 +76,7 @@ try {
 } catch (Exception $e) {
     http_response_code(500);
     echo json_encode(array(
-        "mensaje" => "Error en la base de datos.",
-        "error" => $e->getMessage()
+        "mensaje" => "Error en la base de datos."
     ));
 }
 ?>

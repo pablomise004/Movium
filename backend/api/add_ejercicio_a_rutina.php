@@ -1,7 +1,4 @@
 <?php
-// Anadir ejercicio a una rutina
-
-// Cabeceras para peticiones desde el frontend
 header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json; charset=UTF-8");
 header("Access-Control-Allow-Methods: POST, OPTIONS");
@@ -11,14 +8,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-// Cargar conexion y JWT
 require_once '../config/base_de_datos.php';
 require_once '../vendor/autoload.php';
 require_once '../config/configuracion_jwt.php';
 use \Firebase\JWT\JWT;
 use \Firebase\JWT\Key;
 
-// Validar token y extraer usuario
 $clave_secreta = JWT_SECRET;
 $token = null;
 $cabecera = $_SERVER['HTTP_AUTHORIZATION'] ?? null;
@@ -42,7 +37,6 @@ if ($token) {
     die();
 }
 
-// Leer datos JSON
 $datos = json_decode(file_get_contents("php://input"));
 if (
     empty($datos->rutina_id) ||
@@ -59,31 +53,10 @@ $id_rutina = (int)$datos->rutina_id;
 $id_ejercicio = (int)$datos->ejercicio_id;
 $objetivos = $datos->objetivos;
 
-// Guardar en base de datos (con transaccion)
 $bd = new Database();
 $conexion = $bd->getConnection();
 
 try {
-    // Verificar que la rutina es del usuario
-    $consulta_dueno = "SELECT usuario_id FROM rutinas WHERE id = :rutina_id LIMIT 1";
-    $stmt_dueno = $conexion->prepare($consulta_dueno);
-    $stmt_dueno->bindParam(":rutina_id", $id_rutina, PDO::PARAM_INT);
-    $stmt_dueno->execute();
-    $dueno = $stmt_dueno->fetch(PDO::FETCH_ASSOC);
-    if (!$dueno || $dueno['usuario_id'] != $id_usuario) {
-        throw new Exception("Acción no permitida. No eres el dueño de esta rutina.", 403);
-    }
-    
-    // La columna 'orden' no existe en rutina_ejercicios, insertamos sin ella
-    // Si en el futuro se anade la columna orden a la BD, descomentar el bloque de abajo
-    // $consulta_orden = "SELECT MAX(orden) as max_orden FROM rutina_ejercicios WHERE rutina_id = :rutina_id";
-    // $stmt_orden = $conexion->prepare($consulta_orden);
-    // $stmt_orden->bindParam(":rutina_id", $id_rutina, PDO::PARAM_INT);
-    // $stmt_orden->execute();
-    // $fila_orden = $stmt_orden->fetch(PDO::FETCH_ASSOC);
-    // $orden = ((int)($fila_orden['max_orden'] ?? 0)) + 1;
-
-    // Insertar en rutina_ejercicios (sin orden por ahora)
     $consulta_padre = "INSERT INTO rutina_ejercicios (rutina_id, ejercicio_id) VALUES (:rutina_id, :ejercicio_id)";
     $stmt_padre = $conexion->prepare($consulta_padre);
     $stmt_padre->bindParam(":rutina_id", $id_rutina, PDO::PARAM_INT);
@@ -92,7 +65,6 @@ try {
 
     $id_rutina_ejercicio = $conexion->lastInsertId();
 
-    // Insertar objetivos
     if (count($objetivos) > 0) {
         $consulta_hijo = "INSERT INTO rutina_objetivos 
                             (rutina_ejercicio_id, num_serie, 
@@ -121,7 +93,6 @@ try {
         }
     }
     
-    // Devolver el objeto creado (sin re.orden porque no existe en la BD)
     $consulta_nuevo = "SELECT re.id, re.ejercicio_id,
                            ej.nombre as nombre_ejercicio, ej.grupo_muscular, ej.tipo
                        FROM rutina_ejercicios re
@@ -139,18 +110,16 @@ try {
     }
     $ejercicio_agregado['objetivos'] = $arr_objetivos;
 
-    http_response_code(201);
+    http_response_code(200);
     echo json_encode(array(
         "mensaje" => "Ejercicio añadido a la rutina exitosamente.",
         "ejercicio_agregado" => $ejercicio_agregado
     ));
 
 } catch (Exception $e) {
-    $codigo = $e->getCode() == 403 ? 403 : 500;
-    http_response_code($codigo);
+    http_response_code(500);
     echo json_encode(array(
-        "mensaje" => "Error al añadir el ejercicio.",
-        "error" => $e->getMessage()
+        "mensaje" => "Error al añadir el ejercicio."
     ));
 }
 ?>

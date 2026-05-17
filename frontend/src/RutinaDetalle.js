@@ -1,16 +1,11 @@
-// Detalle de rutina
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import './RutinaDetalle.css';
 import SelectorEjerciciosModal from './components/SelectorEjerciciosModal';
-import ConfirmarBorradoModal from './components/ConfirmarBorradoModal';
-import ConfirmarBorrarEjercicioModal from './components/ConfirmarBorrarEjercicioModal';
+import ConfirmarModal from './components/ConfirmarModal';
 import iconoCrear from './assets/crear-ejercicios.png';
-import { API_BASE_URL } from './configuracion';
-import { bloquearTeclasEntero, bloquearTeclasDecimal } from './utils/formato';
+import { API_BASE_URL } from './config';
 
-// Formulario para crear series de fuerza
 const FormularioFuerza = ({
   objetivos,
   setObjetivos,
@@ -76,9 +71,7 @@ const FormularioFuerza = ({
               value={repsMin}
               placeholder="Obligatorio"
               name="repsMin"
-              onChange={onFormChange}
-              onKeyDown={bloquearTeclasEntero}
-            />
+              onChange={onFormChange}            />
           </div>
           {tipoRep === 'rango' && (
             <div className="form-group-small">
@@ -91,7 +84,6 @@ const FormularioFuerza = ({
                 placeholder="Obligatorio"
                 name="repsMax"
                 onChange={onFormChange}
-                onKeyDown={bloquearTeclasEntero}
               />
             </div>
           )}
@@ -107,7 +99,6 @@ const FormularioFuerza = ({
             placeholder="Obligatorio"
             name="peso"
             onChange={onFormChange}
-            onKeyDown={bloquearTeclasDecimal}
           />
         </div>
         <div className="form-group-small">
@@ -120,7 +111,6 @@ const FormularioFuerza = ({
             placeholder="Opcional"
             name="descanso"
             onChange={onFormChange}
-            onKeyDown={bloquearTeclasEntero}
           />
         </div>
       </div>
@@ -128,7 +118,6 @@ const FormularioFuerza = ({
   );
 };
 
-// Formulario para crear intervalos de cardio
 const FormularioCardio = ({
   objetivos,
   setObjetivos,
@@ -178,7 +167,6 @@ const FormularioCardio = ({
             placeholder="Obligatorio"
             name="tiempoCardio"
             onChange={onFormChange}
-            onKeyDown={bloquearTeclasEntero}
           />
         </div>
         <div className="form-group-small">
@@ -192,7 +180,6 @@ const FormularioCardio = ({
             placeholder="Obligatorio"
             name="distanciaCardio"
             onChange={onFormChange}
-            onKeyDown={bloquearTeclasDecimal}
           />
         </div>
         <div className="form-group-small">
@@ -205,7 +192,6 @@ const FormularioCardio = ({
             placeholder="Opcional"
             name="descansoCardio"
             onChange={onFormChange}
-            onKeyDown={bloquearTeclasEntero}
           />
         </div>
       </div>
@@ -218,7 +204,6 @@ function RutinaDetalle() {
   const { id: rutinaId } = useParams();
   const navigate = useNavigate();
 
-  // Estados de datos
   const [infoRutina, setInfoRutina] = useState(null);
   const [ejerciciosRutina, setEjerciciosRutina] = useState([]);
   const [ejerciciosBase, setEjerciciosBase] = useState([]);
@@ -226,17 +211,14 @@ function RutinaDetalle() {
   const [error, setError] = useState(null);
   const [mensajeOkEjercicio, setMensajeOkEjercicio] = useState(null);
 
-  // Modales
   const [modalSelectorAbierto, setModalSelectorAbierto] = useState(false);
   const [modalBorrarRutinaAbierto, setModalBorrarRutinaAbierto] = useState(false);
   const [borrandoRutina, setBorrandoRutina] = useState(false);
 
-  // Formulario "Agregar ejercicio"
   const [ejercicioElegido, setEjercicioElegido] = useState(null);
   const [objetivosNuevoEjercicio, setObjetivosNuevoEjercicio] = useState([]);
   const [errorAgregar, setErrorAgregar] = useState(null);
 
-  // Inputs del formulario
   const [tipoRepNuevo, setTipoRepNuevo] = useState("rango");
   const [repsMinNueva, setRepsMinNueva] = useState("");
   const [repsMaxNueva, setRepsMaxNueva] = useState("");
@@ -246,12 +228,10 @@ function RutinaDetalle() {
   const [distanciaCardioNueva, setDistanciaCardioNueva] = useState("");
   const [descansoCardioNuevo, setDescansoCardioNuevo] = useState("");
 
-  // Modal "Borrar ejercicio"
   const [ejercicioBorrar, setEjercicioBorrar] = useState(null);
   const [modalBorrarEjercicioAbierto, setModalBorrarEjercicioAbierto] = useState(false);
   const [borrandoEjercicio, setBorrandoEjercicio] = useState(false);
 
-  // Validacion del formulario
   const manejarCambioFormAgregar = (e) => {
     const nombre = e.target.name;
     const valor = e.target.value;
@@ -308,7 +288,6 @@ function RutinaDetalle() {
     );
   };
 
-  // Cargar datos de la rutina
   useEffect(() => {
     const cargarDatosRutina = async () => {
       setCargando(true); setError(null); setErrorAgregar(null); setMensajeOkEjercicio(null);
@@ -316,25 +295,22 @@ function RutinaDetalle() {
       if (!token) { setError("Autenticación requerida."); setCargando(false); return; }
       const headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` };
 
-      try {
-        const info = await fetch(`${API_BASE_URL}get_rutina_info.php?id=${rutinaId}`, { headers });
-        const dataInfo = await info.json();
-        if (!info.ok) throw new Error(dataInfo.mensaje || "Error info rutina");
+      const info = await fetch(`${API_BASE_URL}get_rutina_info.php?id=${rutinaId}`, { headers });
+      const dataInfo = await info.json();
+      if (!info.ok) { setError(dataInfo.mensaje || "Error info rutina"); setCargando(false); return; }
 
-        const ejerciciosGuardados = await fetch(`${API_BASE_URL}get_ejercicios_de_rutina.php?id=${rutinaId}`, { headers });
-        const dataEjerciciosGuardados = await ejerciciosGuardados.json();
-        if (!ejerciciosGuardados.ok) throw new Error(dataEjerciciosGuardados.mensaje || "Error ejercicios guardados");
+      const ejerciciosGuardados = await fetch(`${API_BASE_URL}get_ejercicios_de_rutina.php?id=${rutinaId}`, { headers });
+      const dataEjerciciosGuardados = await ejerciciosGuardados.json();
+      if (!ejerciciosGuardados.ok) { setError(dataEjerciciosGuardados.mensaje || "Error ejercicios guardados"); setCargando(false); return; }
 
-        const maestra = await fetch(`${API_BASE_URL}get_ejercicios_maestra.php`, { headers });
-        const dataMaestra = await maestra.json();
-        if (!maestra.ok) throw new Error(dataMaestra.mensaje || "Error maestra");
+      const maestra = await fetch(`${API_BASE_URL}get_ejercicios_maestra.php`, { headers });
+      const dataMaestra = await maestra.json();
+      if (!maestra.ok) { setError(dataMaestra.mensaje || "Error maestra"); setCargando(false); return; }
 
-        setInfoRutina(dataInfo);
-        setEjerciciosRutina(dataEjerciciosGuardados);
-        setEjerciciosBase(dataMaestra);
-
-      } catch (err) { setError(err.message); }
-      finally { setCargando(false); }
+      setInfoRutina(dataInfo);
+      setEjerciciosRutina(dataEjerciciosGuardados);
+      setEjerciciosBase(dataMaestra);
+      setCargando(false);
     };
     cargarDatosRutina();
   }, [rutinaId]);
@@ -342,21 +318,15 @@ function RutinaDetalle() {
   const confirmarBorrarRutina = async () => {
     setBorrandoRutina(true);
     const token = localStorage.getItem('movium_token');
-    try {
-      const response = await fetch(`${API_BASE_URL}delete_rutina.php`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify({ id: rutinaId })
-      });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.mensaje || 'Error al eliminar la rutina.');
-      setModalBorrarRutinaAbierto(false);
-      setBorrandoRutina(false);
-      navigate('/');
-    } catch (err) {
-      setModalBorrarRutinaAbierto(false);
-      setBorrandoRutina(false);
-    }
+    const response = await fetch(`${API_BASE_URL}delete_rutina.php`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify({ id: rutinaId })
+    });
+    const data = await response.json();
+    setModalBorrarRutinaAbierto(false);
+    setBorrandoRutina(false);
+    if (response.ok) navigate('/');
   };
 
   const seleccionarEjercicio = (ej) => {
@@ -369,8 +339,6 @@ function RutinaDetalle() {
     setMensajeOkEjercicio(null);
   };
 
-  // Valida los campos del formulario de fuerza y devuelve el objeto de la serie
-  // Tuve que añadir muchas validaciones porque sino se colaban NaN y valores raros
   const obtenerSerieActual = () => {
     setErrorAgregar(null);
     let reps_min = null;
@@ -422,7 +390,6 @@ function RutinaDetalle() {
       reps_max_objetivo: reps_max,
       peso_kg_objetivo: pesoNum,
       descanso_seg_post: descansoFinal,
-      // estos campos son de cardio, en fuerza no se usan pero el backend los espera
       tiempo_min_objetivo: null,
       distancia_km_objetivo: null
     };
@@ -430,10 +397,9 @@ function RutinaDetalle() {
 
   const agregarSerieLista = () => {
     const serieData = obtenerSerieActual();
-    if (serieData) setObjetivosNuevoEjercicio(prev => [...prev, serieData]);
+    if (serieData) setObjetivosNuevoEjercicio([...objetivosNuevoEjercicio, serieData]);
   };
 
-  // Igual que obtenerSerieActual pero para cardio (tiempo y distancia en vez de reps y peso)
   const obtenerIntervaloActual = () => {
     setErrorAgregar(null);
 
@@ -461,7 +427,6 @@ function RutinaDetalle() {
     return {
       num_serie: objetivosNuevoEjercicio.length + 1,
       tipo_rep_objetivo: 'fijo',
-      // los campos de fuerza no aplican aqui
       reps_min_objetivo: null,
       reps_max_objetivo: null,
       peso_kg_objetivo: null,
@@ -473,7 +438,7 @@ function RutinaDetalle() {
 
   const agregarIntervaloLista = () => {
     const intervaloData = obtenerIntervaloActual();
-    if (intervaloData) setObjetivosNuevoEjercicio(prev => [...prev, intervaloData]);
+    if (intervaloData) setObjetivosNuevoEjercicio([...objetivosNuevoEjercicio, intervaloData]);
   };
 
   const guardarEjercicio = async (e) => {
@@ -487,22 +452,20 @@ function RutinaDetalle() {
     }
 
     const nuevoEjercicioRutina = { rutina_id: rutinaId, ejercicio_id: ejercicioElegido.id, objetivos: objetivosNuevoEjercicio };
-    try {
-      const response = await fetch(`${API_BASE_URL}add_ejercicio_a_rutina.php`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify(nuevoEjercicioRutina)
-      });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.mensaje || 'Error al añadir el ejercicio.');
-      setEjerciciosRutina(prev => [...prev, data.ejercicio_agregado]);
-      setEjercicioElegido(null);
-      setObjetivosNuevoEjercicio([]);
-      resetearInputsFuerza();
-      resetearInputsCardio();
-      setMensajeOkEjercicio("Ejercicio añadido con éxito.");
-      setTimeout(() => setMensajeOkEjercicio(null), 3000);
-    } catch (err) { setErrorAgregar(`Error al guardar: ${err.message}`); }
+    const response = await fetch(`${API_BASE_URL}add_ejercicio_a_rutina.php`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify(nuevoEjercicioRutina)
+    });
+    const data = await response.json();
+    if (!response.ok) { setErrorAgregar(data.mensaje || 'Error al añadir el ejercicio.'); return; }
+    setEjerciciosRutina(prev => [...prev, data.ejercicio_agregado]);
+    setEjercicioElegido(null);
+    setObjetivosNuevoEjercicio([]);
+    resetearInputsFuerza();
+    resetearInputsCardio();
+    setMensajeOkEjercicio("Ejercicio añadido con éxito.");
+    setTimeout(() => setMensajeOkEjercicio(null), 3000);
   };
 
   const abrirBorrarEjercicio = (ejercicio) => {
@@ -515,24 +478,22 @@ function RutinaDetalle() {
     if (!ejercicioBorrar) return;
     setErrorAgregar(null); setBorrandoEjercicio(true);
     const token = localStorage.getItem('movium_token');
-    try {
-      const response = await fetch(`${API_BASE_URL}delete_ejercicio_de_rutina.php`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify({ id: ejercicioBorrar.id })
-      });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.mensaje || 'Error al borrar el ejercicio');
+    const response = await fetch(`${API_BASE_URL}delete_ejercicio_de_rutina.php`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify({ id: ejercicioBorrar.id })
+    });
+    const data = await response.json();
+    if (!response.ok) {
+      setErrorAgregar(data.mensaje || 'Error al borrar el ejercicio');
+    } else {
       setEjerciciosRutina(data.ejercicios_actualizados);
       setMensajeOkEjercicio("Ejercicio borrado.");
       setTimeout(() => setMensajeOkEjercicio(null), 3000);
-    } catch (err) {
-      setErrorAgregar(err.message);
-    } finally {
-      setModalBorrarEjercicioAbierto(false);
-      setBorrandoEjercicio(false);
-      setEjercicioBorrar(null);
     }
+    setModalBorrarEjercicioAbierto(false);
+    setBorrandoEjercicio(false);
+    setEjercicioBorrar(null);
   };
 
   if (cargando) return <div className="rutina-detalle-container"><p className="subtitle">Cargando...</p></div>;
@@ -624,12 +585,11 @@ function RutinaDetalle() {
             <div className="table-container">
               <table>
                 <thead>
-                  <tr><th>Orden</th><th>Ejercicio</th><th>Detalle</th><th>Acciones</th></tr>
+                  <tr><th>Ejercicio</th><th>Detalle</th><th>Acciones</th></tr>
                 </thead>
                 <tbody>
-                  {ejerciciosRutina.sort((a, b) => a.orden - b.orden).map(ej => (
+                  {ejerciciosRutina.map(ej => (
                     <tr key={ej.id}>
-                      <td>{ej.orden}</td>
                       <td><strong>{ej.nombre_ejercicio}</strong> <small>({ej.tipo})</small></td>
                       <td className="cell-objetivos">
                         {ej.objetivos.length === 0 ? <small>Sin objetivos</small> : (
@@ -665,20 +625,22 @@ function RutinaDetalle() {
         onEjercicioSelect={seleccionarEjercicio}
       />
 
-      <ConfirmarBorradoModal
+      <ConfirmarModal
         isOpen={modalBorrarRutinaAbierto}
         onClose={() => setModalBorrarRutinaAbierto(false)}
         onConfirm={confirmarBorrarRutina}
-        rutinaNombre={infoRutina ? infoRutina.nombre : ""}
         isDeleting={borrandoRutina}
+        nombre={infoRutina ? infoRutina.nombre : ""}
+        mensaje="Se borrarán todos los ejercicios de la rutina y el historial de progreso."
       />
 
-      <ConfirmarBorrarEjercicioModal
+      <ConfirmarModal
         isOpen={modalBorrarEjercicioAbierto}
         onClose={() => { setModalBorrarEjercicioAbierto(false); setEjercicioBorrar(null); }}
         onConfirm={confirmarBorrarEjercicio}
-        ejercicioNombre={ejercicioBorrar ? ejercicioBorrar.nombre : ""}
         isDeleting={borrandoEjercicio}
+        nombre={ejercicioBorrar ? ejercicioBorrar.nombre : ""}
+        mensaje="Solo lo quitará de esta rutina. No borrará tu historial ni récords pasados."
       />
     </>
   );

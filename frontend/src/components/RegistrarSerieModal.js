@@ -1,5 +1,3 @@
-// Modal para registrar serie
-
 import React, { useState, useEffect } from 'react';
 import './RegistrarSerieModal.css';
 import { formatearObjetivo } from '../utils/formato';
@@ -15,7 +13,6 @@ function RegistrarSerieModal({ isOpen, onClose, datosSerie, onGuardar }) {
   const [notas, setNotas] = useState('');
   const MAX_NOTAS_LENGTH = 1000;
 
-  // useEffect para cargar datos
   useEffect(() => {
     if (isOpen && datosSerie && datosSerie.objetivoOriginal) {
       const { objetivoOriginal, datosGuardados, tipo } = datosSerie;
@@ -28,7 +25,6 @@ function RegistrarSerieModal({ isOpen, onClose, datosSerie, onGuardar }) {
       } else {
         setReps(String(fuenteDatosInputs.repeticiones_realizadas || objetivoOriginal.reps_min_objetivo || ''));
         setPeso(String(fuenteDatosInputs.peso_kg_usado || objetivoOriginal.peso_kg_objetivo || ''));
-        // Comprobar si era al fallo (no se puede usar || porque false es falsy)
         let eraAlFallo = false;
         if (datosGuardados && datosGuardados.fue_al_fallo !== undefined) {
           eraAlFallo = datosGuardados.fue_al_fallo;
@@ -48,7 +44,6 @@ function RegistrarSerieModal({ isOpen, onClose, datosSerie, onGuardar }) {
     }
   }, [isOpen, datosSerie]);
 
-  // Handler del Submit
   const guardar = (e) => {
     e.preventDefault();
     setErrorApi(null);

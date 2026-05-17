@@ -21,7 +21,6 @@ class Database {
             $this->conn = new PDO("mysql:host=" . $this->host . ";dbname=" . $this->db_name, $this->username, $this->password);
             $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             $this->conn->exec("set names utf8");
-            // var_dump($this->conn); // para probar que conecta
         } catch (PDOException $exception) {
             http_response_code(500);
             echo json_encode(array(

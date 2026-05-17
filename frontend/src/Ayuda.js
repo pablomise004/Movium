@@ -69,8 +69,7 @@ function Ayuda() {
           </li>
         </ul>
         <p>
-          Puedes <b>editar</b> o <b>borrar</b> ejercicios ya añadidos a la rutina usando los botones correspondientes en la tabla inferior.
-          Al editar, podrás cambiar el orden del ejercicio en la rutina y modificar/añadir/borrar sus series objetivo.
+          Puedes <b>borrar</b> ejercicios ya añadidos a la rutina usando el botón correspondiente en la tabla inferior.
         </p>
         <h4>¿Dudas sobre un ejercicio?</h4>
         <p>
@@ -104,27 +103,9 @@ function Ayuda() {
 
         <h4>Progreso por Rutina</h4>
         <p>
-          En la pantalla de <b>Inicio</b>, haz clic en el botón <b>"Progreso"</b> de una rutina para acceder a su historial detallado.
-          Aquí encontrarás:
+          En la pantalla de <b>Inicio</b>, haz clic en el botón <b>"Progreso"</b> de una rutina para ver sus gráficas de evolución.
+          Podrás ver cómo has progresado en volumen total, repeticiones, tiempo de cardio, etc., a lo largo de las últimas sesiones.
         </p>
-        <ul>
-            <li><b>Gráficas de Evolución:</b> Visualiza cómo has progresado en volumen total, repeticiones, tiempo, etc., a lo largo de las últimas sesiones <b>para esa rutina específica</b>.</li>
-            <li><b>Historial Detallado de Sesiones:</b> Una lista de todas las sesiones que has completado para esa rutina, ordenadas de la más reciente a la más antigua.</li>
-        </ul>
-
-        <h4>Entendiendo el Historial de Sesiones</h4>
-        <p>
-          En la cabecera de cada sesión registrada en el historial, verás unos iconos con resúmenes rápidos:
-        </p>
-        <ul>
-          <li><b>🕒 Tiempo Total:</b> Indica la duración completa de la sesión de entrenamiento.</li>
-          <li><b>🏋️ Volumen Total (Fuerza):</b> Representa el peso total levantado (Peso x Repeticiones de cada serie).</li>
-          <li><b>Importante:</b> Si marcas una serie "Al Fallo" pero no indicas cuántas repeticiones hiciste, esas repeticiones no se sumarán al volumen total. ¡Es recomendable registrar las reps hechas!</li>
-          <li><b>⏱️ Tiempo Total (Cardio):</b> Suma de todos los minutos registrados en cardio.</li>
-          <li><b>📍 Distancia Total (Cardio):</b> Suma de todos los kilómetros registrados en cardio.</li>
-          <li><b>📝 Nota:</b> Este icono aparece si añadiste algún comentario a la sesión. Pulsa sobre él para ver la nota.</li>
-          <li><b><span className="ayuda-fallo-tag">F</span> (Al Fallo):</b> Esta etiqueta azul aparece junto a una serie si la marcaste como realizada "Al Fallo".</li>
-        </ul>
 
         <h4>Estadísticas (PRs)</h4>
         <p>
@@ -143,10 +124,6 @@ function Ayuda() {
           Desde el menú lateral, puedes acceder a la sección <b>"Perfil"</b> para ver y actualizar tu información personal (nombre, fecha de nacimiento, altura, peso, etc.).
         </p>
         <p>
-          <b>¡Importante!</b> Si añades tu <b>correo electrónico</b> en el perfil, podrás usarlo como alternativa a tu nombre de usuario para <b>iniciar sesión</b>.
-          Esto es útil si alguna vez olvidas tu nombre de usuario exacto.
-        </p>
-        <p>
           Recuerda que tu nombre de usuario no se puede cambiar una vez registrado.
         </p>
       </section>
@@ -157,14 +134,12 @@ function Ayuda() {
           <dt>PR (Personal Record)</dt>
           <dd>Tu mejor marca personal registrada para un ejercicio específico (ej: máximo peso, máximas repeticiones, mayor distancia).</dd>
 
-          <dt>e1RM (estimated 1 Repetition Maximum)</dt>
+          <dt>e1RM (Máximo Estimado para 1 Repetición)</dt>
           <dd>
-            Máximo Estimado para 1 Repetición.
-            Es una fórmula que <i>estima</i> cuál sería el peso máximo que podrías levantar para una sola repetición, basándose en el peso y las repeticiones de una serie que ya hiciste.
-            Utilizamos esta métrica para estimar tu evolución de fuerza de forma más consistente.
-            La fórmula que usamos es la de Epley:
+            Estima cuánto peso podrías levantar una sola vez, basándose en el peso y las repeticiones que ya hiciste.
+            Aparece en tus Records como <b>e1RM Est.</b> y se calcula con la fórmula de Epley:
             <br />
-            <code>e1RM = Peso * (1 + Repeticiones / 30)</code>
+            <code>e1RM = Peso × (1 + Repeticiones / 30)</code>
           </dd>
 
           <dt>Serie al Fallo</dt>

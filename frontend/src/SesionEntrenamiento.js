@@ -1,16 +1,16 @@
 // Sesion de entrenamiento
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import './SesionEntrenamiento.css';
 import RegistrarSerieModal from './components/RegistrarSerieModal';
 import ResumenFinalModal from './components/ResumenFinalModal';
 import iconoEntrenar from './assets/entrenar.png';
 import iconoReloj from './assets/reloj.png';
-import { API_BASE_URL } from './configuracion';
+import { API_BASE_URL } from './config';
 import { formatearObjetivo, formatearTooltip } from './utils/formato';
 
-function WorkoutSession() {
+function SesionEntrenamiento() {
   const params = useParams();
   const rutinaId = params.id;
 
@@ -25,7 +25,6 @@ function WorkoutSession() {
     return `${mStr}:${sStr}`;
   };
   const navigate = useNavigate();
-  const intervaloRef = useRef(null);
   const [nombreRutina, setNombreRutina] = useState('');
   const [ejercicios, setEjercicios] = useState([]);
   const [progreso, setProgreso] = useState({});
@@ -36,10 +35,8 @@ function WorkoutSession() {
   const [resumenAbierto, setResumenAbierto] = useState(false);
   const [inicioSesion, setInicioSesion] = useState(null);
   const [segundos, setSegundos] = useState(0);
-  // Lista de ejercicios con sus series completadas, para el modal de resumen final
-  const [resumenWorkout, setResumenWorkout] = useState([]);
+  const [resumenSesion, setResumenSesion] = useState([]);
 
-  // Carga los datos de la rutina al entrar y guarda la hora de inicio
   useEffect(() => {
     setInicioSesion(new Date());
 
@@ -48,67 +45,56 @@ function WorkoutSession() {
       const token = localStorage.getItem('movium_token');
       if (!token) { setError("Error de autenticación."); setCargando(false); return; }
       const cabeceras = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` };
-      try {
-        const respuestaInfo = await fetch(`${API_BASE_URL}get_rutina_info.php?id=${rutinaId}`, { headers: cabeceras });
-        const datosInfo = await respuestaInfo.json();
-        if (!respuestaInfo.ok) throw new Error(datosInfo.mensaje || "Error info rutina.");
+      const respuestaInfo = await fetch(`${API_BASE_URL}get_rutina_info.php?id=${rutinaId}`, { headers: cabeceras });
+      const datosInfo = await respuestaInfo.json();
+      if (!respuestaInfo.ok) { setError(datosInfo.mensaje || "Error info rutina."); setCargando(false); return; }
 
-        const respuestaEjercicios = await fetch(`${API_BASE_URL}get_ejercicios_de_rutina.php?id=${rutinaId}`, { headers: cabeceras });
-        const datosEjercicios = await respuestaEjercicios.json();
-        if (!respuestaEjercicios.ok) throw new Error(datosEjercicios.mensaje || "Error ejercicios rutina.");
+      const respuestaEjercicios = await fetch(`${API_BASE_URL}get_ejercicios_de_rutina.php?id=${rutinaId}`, { headers: cabeceras });
+      const datosEjercicios = await respuestaEjercicios.json();
+      if (!respuestaEjercicios.ok) { setError(datosEjercicios.mensaje || "Error ejercicios rutina."); setCargando(false); return; }
 
-        setNombreRutina(datosInfo.nombre);
-        setEjercicios(datosEjercicios);
-        console.log('Sesión cargada:', datosInfo);
-      } catch (error) { setError(error.message); } finally { setCargando(false); }
+      setNombreRutina(datosInfo.nombre);
+      setEjercicios(datosEjercicios);
+      setCargando(false);
     };
     cargarDatosSesion();
   }, [rutinaId]);
 
   useEffect(() => {
     if (!inicioSesion) return;
-    intervaloRef.current = setInterval(() => {
+    setInterval(() => {
       const ahora = new Date();
       setSegundos(Math.floor((ahora - inicioSesion) / 1000));
     }, 1000);
-    return () => clearInterval(intervaloRef.current);
   }, [inicioSesion]);
 
-  // Marca o desmarca una serie como completada
-  // Si ya estaba marcada la desmarca (pone null), si no la marca con valores por defecto
   const alternarSerie = (ej, objetivo) => {
-    // La clave combina el id del ejercicio y el numero de serie para identificarla
     const clave = `${ej.id}_${objetivo.num_serie}`;
-    setProgreso(prev => {
-      const nuevoEstado = { ...prev };
-      if (nuevoEstado[clave]) {
-        // Si ya existe la borramos (desmarcar)
-        nuevoEstado[clave] = null;
-      } else {
-        // Si no existe la creamos con los valores del objetivo como punto de partida
-        let repsDefault = null;
-        let falloDefault = false;
-        if (ej.tipo !== 'cardio') {
-          falloDefault = objetivo.tipo_rep_objetivo === 'fallo';
-          repsDefault = falloDefault ? null : (objetivo.reps_min_objetivo || null);
-        }
-        nuevoEstado[clave] = {
-          ejercicio_id: ej.ejercicio_id,
-          orden_ejercicio_rutina: ej.orden || 1,
-          num_serie: objetivo.num_serie,
-          repeticiones_realizadas: repsDefault,
-          fue_al_fallo: falloDefault,
-          peso_kg_usado: objetivo.peso_kg_objetivo || null,
-          tiempo_min_realizado: objetivo.tiempo_min_objetivo || null,
-          distancia_km_realizada: objetivo.distancia_km_objetivo || null,
-          notas_serie: null
-        };
+    const nuevoEstado = { ...progreso };
+    if (nuevoEstado[clave]) {
+      nuevoEstado[clave] = null;
+    } else {
+      let repsDefault = null;
+      let falloDefault = false;
+      if (ej.tipo !== 'cardio') {
+        falloDefault = objetivo.tipo_rep_objetivo === 'fallo';
+        repsDefault = falloDefault ? null : (objetivo.reps_min_objetivo || null);
       }
-      return nuevoEstado;
-    });
+      nuevoEstado[clave] = {
+        ejercicio_id: ej.ejercicio_id,
+        orden_ejercicio_rutina: ej.orden || 1,
+        num_serie: objetivo.num_serie,
+        repeticiones_realizadas: repsDefault,
+        fue_al_fallo: falloDefault,
+        peso_kg_usado: objetivo.peso_kg_objetivo || null,
+        tiempo_min_realizado: objetivo.tiempo_min_objetivo || null,
+        distancia_km_realizada: objetivo.distancia_km_objetivo || null,
+        notas_serie: null
+      };
+    }
+    setProgreso(nuevoEstado);
   };
 
-  // Abre el modal de edición de una serie
   const abrirEditorSerie = (ej, objetivoOriginal) => {
     const clave = `${ej.id}_${objetivoOriginal.num_serie}`;
     const datosActuales = progreso[clave];
@@ -123,7 +109,6 @@ function WorkoutSession() {
     });
   };
 
-  // Guarda los datos editados de una serie en el estado de progreso
   const guardarSerie = (datosReales) => {
     if (!serieEditar) return;
     const { ejercicio, numSerie, key } = serieEditar;
@@ -142,18 +127,15 @@ function WorkoutSession() {
     setSerieEditar(null);
   };
 
-  // Prepara el resumen del entrenamiento y abre el modal de confirmacion
   const clicFinalizar = () => {
     setError(null);
-    // Object.values coge todos los valores del objeto progreso (que pueden ser null si se desmarcaron)
     const seriesCompletadas = Object.values(progreso).filter(s => s !== null);
     if (seriesCompletadas.length === 0) {
       setError("No puedes finalizar un entrenamiento sin haber completado al menos una serie.");
       return;
     }
 
-    // Agrupar las series por ejercicio_id para poder mostrarlas organizadas en el resumen
-    // Tuve que hacerlo asi porque las series vienen mezcladas en el objeto progreso
+    // agrupar por ejercicio
     const ejerciciosAgrupados = {};
     for (const serie of seriesCompletadas) {
       if (!serie.ejercicio_id) continue;
@@ -164,7 +146,6 @@ function WorkoutSession() {
       ejerciciosAgrupados[id].push(serie);
     }
 
-    // Recorrer los ejercicios en orden para que el resumen salga en el mismo orden que la rutina
     const resultadoFinal = [];
     for (const ejPlanificado of ejercicios) {
       const id = ejPlanificado.ejercicio_id;
@@ -176,11 +157,10 @@ function WorkoutSession() {
         });
       }
     }
-    setResumenWorkout(resultadoFinal);
+    setResumenSesion(resultadoFinal);
     setResumenAbierto(true);
   };
 
-  // Envía el entrenamiento al servidor
   const confirmarFinalizar = async (notasDeLaSesion) => {
     setGuardando(true); setError(null);
     const seriesCompletadas = Object.values(progreso).filter(s => s !== null);
@@ -197,24 +177,16 @@ function WorkoutSession() {
       series: seriesCompletadas,
       notas_sesion: notasDeLaSesion
     };
-    try {
-      const res = await fetch(`${API_BASE_URL}finalizar_entrenamiento.php`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify(datosAEnviar)
-      });
-      const datos = await res.json();
-      if (!res.ok) {
-        throw new Error(datos.mensaje || "Error al guardar el entrenamiento.");
-      }
-      setGuardando(false);
-      setResumenAbierto(false);
-      navigate('/');
-    } catch (error) {
-      setError(error.message);
-      setGuardando(false);
-      setResumenAbierto(false);
-    }
+    const res = await fetch(`${API_BASE_URL}finalizar_entrenamiento.php`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify(datosAEnviar)
+    });
+    const datos = await res.json();
+    setGuardando(false);
+    setResumenAbierto(false);
+    if (!res.ok) { setError(datos.mensaje || "Error al guardar el entrenamiento."); return; }
+    navigate('/');
   };
 
   const clicVolver = () => {
@@ -335,11 +307,11 @@ function WorkoutSession() {
         onClose={() => { if (!guardando) setResumenAbierto(false); }}
         onConfirm={confirmarFinalizar}
         isFinishing={guardando}
-        resumenDatos={resumenWorkout}
+        resumenDatos={resumenSesion}
       />
 
     </>
   );
 }
 
-export default WorkoutSession;
+export default SesionEntrenamiento;

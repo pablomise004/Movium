@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './Estadisticas.css';
 import iconoTrofeo from './assets/trofeo.png';
 import iconoEstrella from './assets/estrella.png';
-import { API_BASE_URL } from './configuracion';
+import { API_BASE_URL } from './config';
 
 const TabMisPRs = ({ token }) => {
   const [registros, setRegistros] = useState([]);
@@ -15,18 +15,13 @@ const TabMisPRs = ({ token }) => {
     const cargarMisPRs = async () => {
       setCargando(true);
       setError(null);
-      try {
-        const res = await fetch(`${API_BASE_URL}get_mis_todos_prs.php`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.mensaje || 'Error al cargar mis PRs.');
-        setRegistros(data);
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setCargando(false);
-      }
+      const res = await fetch(`${API_BASE_URL}get_mis_todos_prs.php`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const datos = await res.json();
+      if (!res.ok) setError(datos.mensaje || 'Error al cargar mis PRs.');
+      else setRegistros(datos);
+      setCargando(false);
     };
 
     if (token) {
@@ -77,9 +72,11 @@ const TabMisPRs = ({ token }) => {
 
     const pesoDisplay = pr.max_peso != null ? `${pr.max_peso} kg` : '0 kg';
     const repsDisplay = pr.max_reps != null ? pr.max_reps : '0';
+    const hasE1rm = pr.max_e1rm != null;
+    const e1rmDisplay = hasE1rm ? `${pr.max_e1rm} kg` : '-';
 
     return (
-      <div className="pr-records-grid">
+      <div className="pr-records-grid" style={{ gridTemplateColumns: '1fr 1fr 1fr' }}>
         <div className="pr-record-item">
           <strong>Mayor Peso</strong>
           <span>{pesoDisplay}</span>
@@ -87,6 +84,10 @@ const TabMisPRs = ({ token }) => {
         <div className="pr-record-item">
           <strong>Maximas Reps</strong>
           <span>{repsDisplay}</span>
+        </div>
+        <div className="pr-record-item" style={!hasE1rm ? { opacity: 0.6 } : {}}>
+          <strong>e1RM Est.</strong>
+          <span>{e1rmDisplay}</span>
         </div>
       </div>
     );

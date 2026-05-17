@@ -1,7 +1,4 @@
 <?php
-// Obtener perfil del usuario
-
-// Cabeceras para peticiones desde el frontend
 header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json; charset=UTF-8");
 header("Access-Control-Allow-Methods: GET, OPTIONS");
@@ -23,7 +20,6 @@ use \Firebase\JWT\Key;
 
 $clave_secreta = JWT_SECRET;
 
-// Validar token
 $token = null;
 $cabecera = $_SERVER['HTTP_AUTHORIZATION'] ?? null;
 $id_usuario = null; 
@@ -47,7 +43,6 @@ if ($token) {
     die();
 }
 
-// Obtener el perfil
 try {
     $bd = new Database();
     $conexion = $bd->getConnection();
@@ -87,8 +82,7 @@ try {
 } catch (Exception $e) {
     http_response_code(500);
     echo json_encode(array(
-        "mensaje" => "Error en la base de datos.",
-        "error" => $e->getMessage()
+        "mensaje" => "Error en la base de datos."
     ));
 }
 ?>
